@@ -1,0 +1,7 @@
+#include "tb6612.h"
+
+
+#define DIRECTION_CLOCKWISE         0
+#define DIRECTION_COUNTERCLOCKWISE  1
+
+
