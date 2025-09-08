@@ -1,9 +1,0 @@
-{
-    "files.associations": {
-        "lis302dl.h": "c"
-    },
-    "stm32-for-vscode.openOCDPath": "/usr/bin/openocd",
-    "stm32-for-vscode.armToolchainPath": "/opt/st/stm32cubeclt_1.19.0/GNU-tools-for-STM32/bin",
-    "cortex-debug.armToolchainPath": "/opt/st/stm32cubeclt_1.19.0/GNU-tools-for-STM32/bin",
-    "cortex-debug.openocdPath": "/usr/bin/openocd"
-}
