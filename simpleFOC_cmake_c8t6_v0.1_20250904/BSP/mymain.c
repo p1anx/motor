@@ -43,11 +43,12 @@ int mymain(void) {
 
     // test_led();
 
-    velocityOpenloop(2);
+    // velocityOpenloop(1);
+    // test_velocityOpenLoop();
     // test_pid();
     // test_torque();
 
     // AS5600_test();
-    // test_as5600_angle();
+    test_as5600_angle();
   }
 }

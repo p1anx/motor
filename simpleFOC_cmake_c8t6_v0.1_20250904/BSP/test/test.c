@@ -1,4 +1,5 @@
 #include "test.h"
+#include "as5600.h"
 #include "led.h"
 #include "open_loop_FOC.h"
 
@@ -12,3 +13,4 @@ void test_as5600_angle(void) {
 }
 
 void test_torque(void) { setTorque(3, _PI_2); }
+void test_velocityOpenLoop(void) { velocityOpenloop(1); }

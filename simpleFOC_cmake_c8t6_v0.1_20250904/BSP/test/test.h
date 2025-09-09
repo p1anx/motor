@@ -6,4 +6,5 @@
 void test_led(void);
 void test_as5600_angle(void);
 void test_torque(void);
+void test_velocityOpenLoop(void);
 #endif // !__TEST_H

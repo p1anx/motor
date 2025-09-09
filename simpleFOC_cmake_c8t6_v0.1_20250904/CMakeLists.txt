@@ -49,16 +49,6 @@ target_link_directories(${CMAKE_PROJECT_NAME} PRIVATE
 target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     # Add user sources here
     BSP/mymain.c
-<<<<<<< Updated upstream:simpleFOC_cmake_c8t6_v0.1_20250904/CMakeLists.txt
-=======
-    BSP/led/led.c
-    BSP/key/key.c
-    BSP/pwm/bit_stream.c
-    BSP/pwm/pid_init.c
-    BSP/pwm/tb6612.c
-    BSP/pwm/qam_test.c
-    BSP/timer/timer_it.c
->>>>>>> Stashed changes:motor_cmake_f407vet6_v0.5_20250903/CMakeLists.txt
     BSP/usart/usart_mx.c
     BSP/as5600/open_loop_FOC.c
     BSP/as5600/as5600.c
@@ -70,15 +60,8 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
     # Add user defined include paths
     BSP
-<<<<<<< Updated upstream:simpleFOC_cmake_c8t6_v0.1_20250904/CMakeLists.txt
     BSP/as5600
     BSP/led
-=======
-    BSP/led
-    BSP/key
-    BSP/pwm
-    BSP/timer
->>>>>>> Stashed changes:motor_cmake_f407vet6_v0.5_20250903/CMakeLists.txt
     BSP/usart
     BSP/test
 )
@@ -100,7 +83,8 @@ target_link_libraries(${CMAKE_PROJECT_NAME}
     # Add user defined libraries
 )
 # set(CMAKE_EXE_LINKER_FLAGS "--specs=nosys.specs")
-# set(CMAKE_EXE_LINKER_FLAGS "--specs=nosys.specs -Wl,-Map=${PROJECT_NAME}.map -Wl,--gc-sections -Wl,--print-memory-usage")
+# set(CMAKE_EXE_LINKER_FLAGS "--specs=nano.specs -Wl,-Map=${CMAKE_PROJECT_NAME}.map -Wl,--gc-sections -Wl,--print-memory-usage")
+# set(CMAKE_EXE_LINKER_FLAGS "--specs=nosys.specs -Wl,-Map=${CMAKE_PROJECT_NAME}.map -Wl,--gc-sections -Wl,--print-memory-usage")
 # 不使用 --specs=nosys.specs，直接链接库
 
 
@@ -164,7 +148,3 @@ COMMAND ${KILL} -f openocd 2> /dev/null
 COMMENT "Closing openocd server.."
 )
 add_dependencies(debug start_openocd)
-<<<<<<< Updated upstream:simpleFOC_cmake_c8t6_v0.1_20250904/CMakeLists.txt
-
-=======
->>>>>>> Stashed changes:motor_cmake_f407vet6_v0.5_20250903/CMakeLists.txt
