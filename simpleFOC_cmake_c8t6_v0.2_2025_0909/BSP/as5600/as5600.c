@@ -1,4 +1,5 @@
 #include "as5600.h"
+#include "foc_base.h"
 #include "open_loop_FOC.h"
 #include "stm32f1xx_hal.h"
 #include <stdint.h>

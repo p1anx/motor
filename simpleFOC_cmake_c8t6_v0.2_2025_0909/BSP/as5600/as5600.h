@@ -9,7 +9,7 @@
 
 void AS5600_test(void);
 float getAngle(void);
-int getCircle();
+int getCircle(void);
 float getVelocity(void);
 void test_velocity(void);
 #endif

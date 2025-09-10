@@ -1,5 +1,6 @@
 #include "mymain.h"
 #include "as5600.h"
+#include "foc_base.h"
 #include "open_loop_FOC.h"
 #include "stm32f1xx_hal.h"
 #include "test/test.h"
@@ -45,10 +46,17 @@ int mymain(void) {
 
     // velocityOpenloop(1);
     // test_velocityOpenLoop();
+    // test_positionClosedLoop();
+
     // test_pid();
     // test_torque();
 
     // AS5600_test();
-    test_as5600_angle();
+    // test_as5600_angle();
+    // test_sensor();
+    // test_motor();
+
+    // test_alignSensor();
+    test_pid();
   }
 }

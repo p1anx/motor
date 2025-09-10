@@ -54,6 +54,24 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     BSP/as5600/as5600.c
     BSP/led/led.c
     BSP/test/test.c
+
+    # BSP/motor/main_motor.c
+    # BSP/motor/BLDCMotor.c
+    #
+    # BSP/motor/common/foc_utils.c
+    # BSP/motor/common/lowpass_filter.c
+    # BSP/motor/common/pid.c
+    # BSP/motor/common/time_utils.c
+    #
+    # BSP/motor/common/base_classes/FOCMotor.c
+    # BSP/motor/motor_drivers/BLDCDriver3PWM.c
+    # BSP/motor/sensors/Encoder.c
+
+
+    # BSP/simpleFOC/main_foc.c
+    #
+    BSP/FOC/foc_base.c
+    BSP/FOC/BLDCDriver/BLDCDriver.c
 )
 
 # Add include paths
@@ -64,6 +82,17 @@ target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
     BSP/led
     BSP/usart
     BSP/test
+    BSP/motor
+
+    # BSP/motor/Inc
+    # BSP/motor/common
+    # BSP/motor/common/base_classes
+    # BSP/motor/motor_drivers
+    # BSP/motor/sensors
+    #
+    # BSP/simpleFOC
+    BSP/FOC
+    BSP/FOC/BLDCDriver
 )
 
 # Add project symbols (macros)
