@@ -1,13 +1,16 @@
 #include "mymain.h"
 #include "as5600.h"
 #include "foc_base.h"
+#include "motor_config.h"
 #include "open_loop_FOC.h"
 #include "stm32f1xx_hal.h"
+#include "stm32f1xx_hal_tim.h"
 #include "test/test.h"
+#include "tim.h"
 void calc_time(void) {
   static int last_time = 0;
   int now_time, delta_time;
-  now_time = HAL_GetTick();
+  now_time = _micros();
   delta_time = now_time - last_time;
   last_time = now_time;
   printf("nowtime = %d, delta_time = %d\n", now_time, delta_time);
@@ -23,6 +26,10 @@ int mymain(void) {
   HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1);
   HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_4);
   HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_4);
+  __HAL_TIM_SET_PRESCALER(&htim1, 0);
+  __HAL_TIM_SET_PRESCALER(&htim4, 0);
+  __HAL_TIM_SET_AUTORELOAD(&htim1, PWM_RESOLUTION);
+  __HAL_TIM_SET_AUTORELOAD(&htim4, PWM_RESOLUTION);
   while (1) {
 
     // calc_time();
@@ -57,6 +64,12 @@ int mymain(void) {
     // test_motor();
 
     // test_alignSensor();
+    // test_alignSensor_struct();
+    // test_struct_openloop_velocity();
+    // test_as5600_new();
+    // test_as5600_vel1();
+    // test_as5600_shaftAngle();
     test_pid();
+    // test_pid_angle();
   }
 }

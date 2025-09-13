@@ -3,10 +3,16 @@
 // #include "Encoder.h"
 // #include "FOCMotor.h"
 #include "BLDCDriver.h"
+#include "BLDCMotor.h"
 #include "as5600.h"
+#include "encoder.h"
 #include "foc_base.h"
+#include "foc_motor.h"
 #include "led.h"
+// #include "motor/Inc/BLDCMotor.h"
+#include "encoder_as5600.h"
 #include "open_loop_FOC.h"
+#include "sensor.h"
 #include "stm32f103xb.h"
 #include "stm32f1xx_hal.h"
 #include "stm32f1xx_hal_gpio.h"
@@ -29,7 +35,7 @@ void test_velocityOpenLoop(void) {
 }
 #define LEN 3
 void test_positionClosedLoop(void) {
-  float target_angle[LEN] = {0, 90, 180};
+  float target_angle[LEN] = {0, 90, 45};
   float kp = 0.133;
   float sensor_angle;
 
@@ -107,36 +113,6 @@ void test_positionClosedLoop(void) {
 //
 //   BLDCMotor_setPhaseVoltage(&motor, 3, 0, _PI_2);
 // }
-void test_alignSensor_struct(void) {
-  BLDCDriver3PWM_enable();
-  alignSensor();
-  float target_angle[LEN] = {0, 90, 180};
-  float kp = 0.133;
-  float sensor_angle;
-
-  int i = 0;
-
-  while (1) {
-
-    sensor_angle = getAngle();
-    setPhaseVoltage(
-        _constrain(kp * (target_angle[i] - sensor_angle) * 90 / _PI_2, -6, 6),
-        0, getElectricalAngle());
-
-    // setTorque(
-    //     _constrain(kp * (target_angle[i] - sensor_angle) * 90 / _PI_2,
-    //     -6, 6), _normalizeAngle(7 * getAngle() - zero_electric_angle));
-    printf("now2 target_angle = %f\n", target_angle[i]);
-    i++;
-    if (i == LEN) {
-      i = 0;
-    }
-    printf("now2 angle = %f\n", sensor_angle);
-    // printf("zero_electric_angle = %f\n", zero_electric_angle);
-
-    HAL_Delay(1000);
-  }
-}
 
 void test_alignSensor(void) {
   BLDCDriver3PWM_enable();
@@ -168,32 +144,257 @@ void test_alignSensor(void) {
     HAL_Delay(1000);
   }
 }
+void test_alignSensor_struct(void) {
+  BLDCMotor_t motor;
+  BLDCDriver_t driver;
+  BLDCMotor_init(&motor, 7);
+  BLDCDriver3PWM_init(&driver, 12, 6);
+  BLDCMotor_linkDriver(&motor, &driver);
+
+  printf("pp = %d\n", motor.foc_motor.pole_pairs);
+  printf("power = %f v\n", motor.driver->voltage_power_supply);
+  printf("foc foc_modulation = %f\n", motor.foc_motor.foc_modulation);
+
+  driver.functions->enable(&driver);
+  BLDCMotor_setPhaseVoltage(&motor, 3, 0, _3PI_2);
+  // setTorque(3, _3PI_2);
+}
+
+void test_struct_openloop_velocity(void) {
+  BLDCMotor_t motor;
+  BLDCDriver_t driver;
+  Sensor_t sensor;
+  BLDCMotor_init(&motor, 7);
+  BLDCDriver3PWM_init(&driver, 12, 6);
+  BLDCMotor_linkDriver(&motor, &driver);
+  FOCMotor_linkSensor(&motor, &sensor);
+
+  motor.foc_motor.controller = ControlType_velocity_openloop;
+  // motor.foc_motor.foc_modulation = FOCModulationType_SpaceVectorPWM;
+
+  printf("pp = %d\n", motor.foc_motor.pole_pairs);
+  printf("power = %f v\n", motor.driver->voltage_power_supply);
+  printf("foc foc_modulation = %f\n", motor.foc_motor.foc_modulation);
+
+  driver.functions->enable(&driver);
+  BLDCMotor_setPhaseVoltage(&motor, 3, 0, _3PI_2);
+  _delay(1000);
+  while (1) {
+    BLDCMotor_move(&motor, 1);
+  }
+  // setTorque(3, _3PI_2);
+}
+void test_as5600_new(void) {
+  AS5600_Example_Init();
+  _delay(2000);
+  while (1) {
+    AS5600_Example_ReadAngle();
+    AS5600_Example_ReadSpeed();
+    _delay(1000);
+  }
+}
+void test_as5600_vel1(void) {
+  BLDCMotor_t motor;
+  BLDCDriver_t driver;
+  Sensor_t sensor;
+  BLDCMotor_init(&motor, 7);
+  BLDCDriver3PWM_init(&driver, 12, 6);
+  BLDCMotor_linkDriver(&motor, &driver);
+  FOCMotor_linkSensor(&motor, &sensor);
+
+  motor.foc_motor.controller = ControlType_velocity_openloop;
+  // motor.foc_motor.foc_modulation = FOCModulationType_SpaceVectorPWM;
+
+  printf("pp = %d\n", motor.foc_motor.pole_pairs);
+  printf("power = %f v\n", motor.driver->voltage_power_supply);
+  printf("foc foc_modulation = %f\n", motor.foc_motor.foc_modulation);
+
+  driver.functions->enable(&driver);
+  BLDCMotor_setPhaseVoltage(&motor, 3, 0, _3PI_2);
+  AS5600_Example_Init();
+  _delay(1000);
+  while (1) {
+    BLDCMotor_move(&motor, 1);
+    AS5600_Example_ReadAngle();
+    AS5600_Example_ReadSpeed();
+  }
+}
+void test_as5600_shaftAngle(void) {
+  extern I2C_HandleTypeDef hi2c2;
+  BLDCMotor_t motor;
+  BLDCDriver_t driver;
+  Sensor_t sensor;
+  Encoder_t encoder;
+  AS5600_t as5600_0;
+  BLDCMotor_init(&motor, 7);
+  BLDCDriver3PWM_init(&driver, 12, 10);
+  BLDCMotor_linkDriver(&motor, &driver);
+  FOCMotor_linkSensor(&motor, &sensor);
+
+  motor.foc_motor.controller = ControlType_velocity_openloop;
+  // motor.foc_motor.foc_modulation = FOCModulationType_SpaceVectorPWM;
+
+  printf("pp = %d\n", motor.foc_motor.pole_pairs);
+  printf("power = %f v\n", motor.driver->voltage_power_supply);
+  printf("foc foc_modulation = %f\n", motor.foc_motor.foc_modulation);
+
+  driver.functions->enable(&driver);
+  BLDCMotor_setPhaseVoltage(&motor, 3, 0, _3PI_2);
+  Encoder_AS5600_Init(&encoder.as5600, &hi2c2);
+  _delay(1000);
+  Encoder_AS5600_ReadAngle(&encoder.as5600);
+  while (1) {
+    // Encoder_AS5600_ReadAngle(&encoder.as5600);
+    // Encoder_AS5600_ReadAngle(as5600_0);
+    BLDCMotor_move(&motor, 5);
+    float angle = Encoder_getAngle(&encoder);
+    printf("as5600 angle = %f\n", angle);
+    float vel = Encoder_getVelocity(&encoder);
+    printf("as5600 vel = %f\n", vel);
+    // _delay(1000);
+    // Encoder_AS5600_ReadAngle(as5600_0);
+  }
+}
+
 void test_pid(void) {
-  BLDCDriver3PWM_enable();
-  alignSensor();
-  float target_angle[LEN] = {0, 90, 180};
+  extern I2C_HandleTypeDef hi2c2;
+  BLDCMotor_t motor;
+  BLDCDriver_t driver;
+  Sensor_t sensor;
+  Encoder_t encoder;
+  BLDCMotor_init(&motor, 7);
+  BLDCDriver3PWM_init(&driver, 12, 12);
+  BLDCMotor_linkDriver(&motor, &driver);
+  FOCMotor_linkSensor(&motor, &sensor);
+  FOCMotor_linkEncoder(&motor, &encoder);
+
+  motor.foc_motor.controller = ControlType_velocity;
+  // motor.foc_motor.foc_modulation = FOCModulationType_SpaceVectorPWM;
+
+  printf("pp = %d\n", motor.foc_motor.pole_pairs);
+  printf("power = %f v\n", motor.driver->voltage_power_supply);
+  printf("foc foc_modulation = %f\n", motor.foc_motor.foc_modulation);
+
+  Encoder_AS5600_Init(&encoder.as5600, &hi2c2);
+  driver.functions->enable(&driver);
+  motor.foc_motor.PID_velocity.P = 2;
+  motor.foc_motor.PID_velocity.I = 0.1;
+  motor.foc_motor.PID_velocity.D = 0.00;
+
+  motor.foc_motor.PID_velocity.limit = 4.00;
+  motor.foc_motor.PID_velocity.output_ramp = 5;
+  // motor.driver->voltage_limit = 12;
+  // BLDCMotor_setPhaseVoltage(&motor, 3, 0, _3PI_2);
+  // motor.foc_motor.voltage_d = 0;
+  _delay(1000);
+  while (1) {
+    // Encoder_AS5600_ReadAngle(&encoder.as5600);
+    // Encoder_AS5600_ReadAngle(as5600_0);
+
+    BLDCMotor_loopFOC(&motor);
+    // static unsigned long last_time = 0;
+    // if (_micros() - last_time > 20000) {
+    //   BLDCMotor_move(&motor, 1);
+    //   last_time = _micros();
+    // }
+    BLDCMotor_move(&motor, 1);
+
+    // float angle = Encoder_getAngle(&encoder);
+    // printf("as5600 angle = %f\n", angle);
+    // float vel = Encoder_getVelocity(&encoder);
+    // float vel = FOCMotor_shaftVelocity(&motor.foc_motor);
+    // printf("as5600 vel = %f\n", vel);
+    // printf("as5600 vel1 = %f\n", vel);
+    // printf("pid limit = %f\n", motor.foc_motor.PID_velocity.limit);
+    // printf("pid ud = %f\n", motor.foc_motor.voltage_d);
+    // _delay(10);
+    // Encoder_AS5600_ReadAngle(as5600_0);
+    printf("%f,%f\n", motor.foc_motor.shaft_velocity,
+           motor.foc_motor.voltage_q);
+    // printf("driver v_supply = %f\n", driver.voltage_power_supply);
+  }
+}
+void test_pid_angle(void) {
+  extern I2C_HandleTypeDef hi2c2;
+  BLDCMotor_t motor;
+  BLDCDriver_t driver;
+  Sensor_t sensor;
+  Encoder_t encoder;
+  BLDCMotor_init(&motor, 7);
+  BLDCDriver3PWM_init(&driver, 12, 5);
+  BLDCMotor_linkDriver(&motor, &driver);
+  FOCMotor_linkSensor(&motor, &sensor);
+  FOCMotor_linkEncoder(&motor, &encoder);
+
+  motor.foc_motor.controller = ControlType_angle;
+  // motor.foc_motor.foc_modulation = FOCModulationType_SpaceVectorPWM;
+
+  printf("pp = %d\n", motor.foc_motor.pole_pairs);
+  printf("power = %f v\n", motor.driver->voltage_power_supply);
+  printf("foc foc_modulation = %f\n", motor.foc_motor.foc_modulation);
+
+  // BLDCMotor_setPhaseVoltage(&motor, 3, 0, _3PI_2);
+  Encoder_AS5600_Init(&encoder.as5600, &hi2c2);
+  driver.functions->enable(&driver);
+  motor.foc_motor.PID_velocity.P = 0.1;
+  motor.foc_motor.PID_velocity.I = 0.0;
+  motor.foc_motor.PID_velocity.D = 0.00;
+
+  motor.foc_motor.PID_velocity.limit = 2.00;
+  _delay(1000);
+#define LEN0 5
+  int angle[LEN0] = {0, 1, 1.57, 2, 2.5};
+  int i = 0;
+  while (1) {
+    // Encoder_AS5600_ReadAngle(&encoder.as5600);
+    // Encoder_AS5600_ReadAngle(as5600_0);
+
+    BLDCMotor_move(&motor, angle[i]);
+    if (i == LEN0 - 1) {
+      i = 0;
+    }
+    i++;
+    BLDCMotor_loopFOC(&motor);
+    float angle = Encoder_getAngle(&encoder);
+    printf("as5600 angle = %f\n", angle);
+    float vel = Encoder_getVelocity(&encoder);
+    float vel1 = FOCMotor_shaftVelocity(&motor);
+    printf("as5600 vel = %f\n", vel);
+    printf("as5600 vel1 = %f\n", vel);
+    printf("pid limit = %f\n", motor.foc_motor.PID_velocity.limit);
+    _delay(100);
+    // Encoder_AS5600_ReadAngle(as5600_0);
+  }
+}
+void test_ClosedLoop_vel(void) {
+  float target_angle[LEN] = {0, 90, 45};
   float kp = 0.133;
   float sensor_angle;
+
+  float zero_electric_angle = 0;
+  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_8, GPIO_PIN_SET);
+
+  setTorque(3, _3PI_2);
+  HAL_Delay(1000);
+  zero_electric_angle = _normalizeAngle(7 * getAngle() - zero_electric_angle);
+  setTorque(0, _3PI_2);
 
   int i = 0;
 
   while (1) {
 
     sensor_angle = getAngle();
-    setPhaseVoltage(
-        _constrain(kp * (target_angle[i] - sensor_angle) * 90 / _PI_2, -6, 6),
-        0, getElectricalAngle());
 
-    // setTorque(
-    //     _constrain(kp * (target_angle[i] - sensor_angle) * 90 / _PI_2,
-    //     -6, 6), _normalizeAngle(7 * getAngle() - zero_electric_angle));
+    setTorque(
+        _constrain(kp * (target_angle[i] - sensor_angle) * 90 / _PI_2, -6, 6),
+        _normalizeAngle(7 * getAngle() - zero_electric_angle));
     printf("now2 target_angle = %f\n", target_angle[i]);
     i++;
     if (i == LEN) {
       i = 0;
     }
     printf("now2 angle = %f\n", sensor_angle);
-    // printf("zero_electric_angle = %f\n", zero_electric_angle);
+    printf("zero_electric_angle = %f\n", zero_electric_angle);
 
     HAL_Delay(1000);
   }

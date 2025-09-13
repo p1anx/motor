@@ -1,5 +1,6 @@
 #include "foc_base.h"
 #include "math.h"
+#include "stm32f1xx_hal_tim.h"
 
 #define PP 7
 int pwmA, pwmB, pwmC;
@@ -15,7 +16,9 @@ int foc_modulation = SinePWM;
 
 void _delay(unsigned long ms) { HAL_Delay(ms); }
 unsigned long _micros(void) {
-  return HAL_GetTick(); // get microseconds
+  // return HAL_GetTick() * 1000; // get microseconds
+  return HAL_GetTick() * 1000 +
+         (SysTick->LOAD - SysTick->VAL) / (SystemCoreClock / 1000000);
 }
 
 void _writeDutyCycle3PWM(float dc_a, float dc_b, float dc_c, int pinA, int pinB,

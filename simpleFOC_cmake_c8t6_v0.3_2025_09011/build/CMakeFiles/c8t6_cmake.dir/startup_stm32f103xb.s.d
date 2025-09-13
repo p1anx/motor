@@ -1,0 +1,2 @@
+CMakeFiles/c8t6_cmake.dir/startup_stm32f103xb.s.obj: \
+ /home/xwj/0-code/0-github/motor/simpleFOC_cmake_c8t6_v0.3_2025_09011/startup_stm32f103xb.s

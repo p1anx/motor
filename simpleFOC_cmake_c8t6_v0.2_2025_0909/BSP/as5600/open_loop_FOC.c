@@ -1,6 +1,7 @@
 #include "open_loop_FOC.h"
 #include "as5600.h"
 #include "math.h"
+#include "motor_config.h"
 
 #define PP 7
 #define DIR 1
@@ -54,7 +55,7 @@ float velocityOpenloop(float target_velocity) {
                  // 返回的是一个无符号长整型（unsigned long）的值
 
   // 计算当前每个Loop的运行时间间隔
-  float Ts = (now_us - open_loop_timestamp) * 1e-3f;
+  float Ts = (now_us - open_loop_timestamp) * TIME_MICROS;
   printf("Ts = %f\n", Ts);
 
   // 由于 micros() 函数返回的时间戳会在大约 70
@@ -95,8 +96,8 @@ typedef struct {
 } PIDController;
 
 // PID控制器函数
-void PIDController_init(PIDController *pid, float P, float I, float D,
-                        float ramp, float limit) {
+static void PIDController_init(PIDController *pid, float P, float I, float D,
+                               float ramp, float limit) {
   pid->P = P;
   pid->I = I;
   pid->D = D;
@@ -269,38 +270,38 @@ void FOC_InitPID(PIDController_t *pid, float kp, float ki, float kd,
   pid->integral_limit = int_limit;
 }
 
-void FOC_CurrentControl(FOCMotor_t *motor) {
-  // Clarke变换
-  FOC_Clarke(motor->current_a, motor->current_b, motor->current_c,
-             &motor->clarke);
-
-  // Park变换
-  FOC_Park(motor->clarke.alpha, motor->clarke.beta, motor->angle_elec,
-           &motor->park);
-
-  // 电流环PID控制
-  float target_id = 0;                    // d轴电流设定为0（最大转矩控制）
-  float target_iq = motor->target_torque; // q轴电流控制转矩
-
-  motor->v_d =
-      FOC_PIDUpdate(&motor->pid_id, target_id, motor->park.d, 0.00005f);
-  motor->v_q =
-      FOC_PIDUpdate(&motor->pid_iq, target_iq, motor->park.q, 0.00005f);
-}
-
-void FOC_VelocityControl(FOCMotor_t *motor) {
-  // 速度环PID控制
-  motor->target_torque = FOC_PIDUpdate(
-      &motor->pid_velocity, motor->target_velocity, motor->velocity, 0.001f);
-
-  // 执行电流控制
-  FOC_CurrentControl(motor);
-}
-
-void FOC_SetVelocity(FOCMotor_t *motor, float velocity) {
-  motor->target_velocity = velocity;
-}
-
-void FOC_SetTorque(FOCMotor_t *motor, float torque) {
-  motor->target_torque = torque;
-}
+// void FOC_CurrentControl(FOCMotor_t *motor) {
+//   // Clarke变换
+//   FOC_Clarke(motor->current_a, motor->current_b, motor->current_c,
+//              &motor->clarke);
+//
+//   // Park变换
+//   FOC_Park(motor->clarke.alpha, motor->clarke.beta, motor->angle_elec,
+//            &motor->park);
+//
+//   // 电流环PID控制
+//   float target_id = 0;                    // d轴电流设定为0（最大转矩控制）
+//   float target_iq = motor->target_torque; // q轴电流控制转矩
+//
+//   motor->v_d =
+//       FOC_PIDUpdate(&motor->pid_id, target_id, motor->park.d, 0.00005f);
+//   motor->v_q =
+//       FOC_PIDUpdate(&motor->pid_iq, target_iq, motor->park.q, 0.00005f);
+// }
+//
+// void FOC_VelocityControl(FOCMotor_t *motor) {
+//   // 速度环PID控制
+//   motor->target_torque = FOC_PIDUpdate(
+//       &motor->pid_velocity, motor->target_velocity, motor->velocity, 0.001f);
+//
+//   // 执行电流控制
+//   FOC_CurrentControl(motor);
+// }
+//
+// void FOC_SetVelocity(FOCMotor_t *motor, float velocity) {
+//   motor->target_velocity = velocity;
+// }
+//
+// void FOC_SetTorque(FOCMotor_t *motor, float torque) {
+//   motor->target_torque = torque;
+// }
