@@ -35,6 +35,8 @@ void MG513_Init(Motor_InitStruct *motor) {
   int speed = 100;
 
   HAL_TIM_PWM_Start(motor->pwm_tim, motor->pwm_channel);
+  __HAL_TIM_SET_PRESCALER(motor->pwm_tim, PWM_TIM_PSC - 1);
+  __HAL_TIM_SET_AUTORELOAD(motor->pwm_tim, PWM_RESOLUTION - 1);
   // HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_4);
   HAL_TIM_Encoder_Start(motor->encoder_tim, TIM_CHANNEL_ALL);
   HAL_TIM_Base_Start_IT(motor->encoder_tim);
@@ -703,6 +705,41 @@ void timer_control_position_qam_sequence(Motor_InitStruct *motor) {
   }
   tim_count++;
 }
+void timer_control_position_qam_sequence_without_offset(
+    Motor_InitStruct *motor) {
+  static int tim_count = 0;
+  static float bit[4] = {BIT_00, BIT_01, BIT_11, BIT_10};
+  static int bit_count = 0;
+  static int bias_count = 0;
+  float bit_update_time = 1.0;
+
+  if (tim_count > bit_update_time / PID_UPDATE_TIME) {
+
+    if (bit[bit_count] == BIT_00) {
+      motor->pid_pos_init->target_position = BIT_00;
+    }
+    if (bit[bit_count] == BIT_01) {
+      motor->pid_pos_init->target_position = BIT_01;
+    }
+    if (bit[bit_count] == BIT_11) {
+      motor->pid_pos_init->target_position = BIT_11;
+    }
+    if (bit[bit_count] == BIT_10) {
+      motor->pid_pos_init->target_position = BIT_10;
+    }
+    bit_count++;
+    bias_count++;
+    // if (bias_count == 38) {
+    //   bias_count = 0;
+    // }
+    if (bit_count == 4) {
+      bit_count = 0;
+    }
+
+    tim_count = 0;
+  }
+  tim_count++;
+}
 void timer_control_position_qam(Motor_InitStruct *motor) {
   static int tim_count = 0;
   static float bit[4] = {BIT_00, BIT_01, BIT_11, BIT_10};
@@ -942,8 +979,13 @@ void tb6612_direction(Motor_InitStruct *motor, int direction) {
   }
 }
 void tb6612_setPWM(Motor_InitStruct *motor, float duty) {
-  __HAL_TIM_SetAutoreload(motor->pwm_tim, TB6612_PWM1_PERIOD - 1);
+  // __HAL_TIM_SET_PRESCALER(motor->pwm_tim, 3);
+  // __HAL_TIM_SetAutoreload(motor->pwm_tim, 4095);
+  __HAL_TIM_SET_PRESCALER(motor->pwm_tim, PWM_TIM_PSC - 1);
+  __HAL_TIM_SetAutoreload(motor->pwm_tim, PWM_RESOLUTION - 1);
   __HAL_TIM_SetCompare(motor->pwm_tim, motor->pwm_channel, duty - 1);
+  // __HAL_TIM_SetAutoreload(motor->pwm_tim, TB6612_PWM1_PERIOD - 1);
+  // __HAL_TIM_SetCompare(motor->pwm_tim, motor->pwm_channel, duty - 1);
 }
 extern int g_tim_flag;
 void key_control_position(Motor_InitStruct *motor) {

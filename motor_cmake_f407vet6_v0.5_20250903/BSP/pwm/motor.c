@@ -162,20 +162,22 @@ int timer_increase_angle(Motor_InitStruct *motor) {
 void qam_modulate(void) {
   // dual_pid_position(&motor1);
 
-  // 1. 4qam
   positional_pid_position_loop(&motor1);
+  // 1. 4qam
   // timer_control_position_qam(&motor1);
   // timer_control_position_qam_adaptive(&motor1);
 
   // timer_control_position_qam_sequence(&motor1);
 
-  timer_control_position_qam16_sequence(&motor1);
+  // timer_control_position_qam16_sequence(&motor1);
   // 2. 16qam
   // timer_control_position_qam16(&motor1);
   // calc_rotating_time();
   // 3. incremental qam
   //  incremental_pid_position_loop(&motor1);
   //  timer_control_position_qam_inc(&motor1);
+  // 4.timer_control_position_qam_sequence_without_offset
+  timer_control_position_qam_sequence_without_offset(&motor1);
 }
 
 // int timer_increase_position(Motor_InitStruct* motor) {
