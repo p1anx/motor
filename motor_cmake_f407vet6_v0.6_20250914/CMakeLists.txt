@@ -51,14 +51,14 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     BSP/mymain.c
     BSP/led/led.c
     BSP/key/key.c
-    BSP/pwm/bit_stream.c
-    BSP/pwm/pid_init.c
-    BSP/pwm/tb6612.c
-    BSP/pwm/qam_test.c
-    BSP/timer/timer_it.c
+    # BSP/pwm/bit_stream.c
+    # BSP/pwm/pid_init.c
+    # BSP/pwm/tb6612.c
+    # BSP/pwm/qam_test.c
+    # BSP/timer/timer_it.c
     BSP/usart/usart_mx.c
-    BSP/usart/uart_it.c
-    BSP/pwm/motor.c
+    # BSP/usart/uart_it.c
+    # BSP/pwm/motor.c
     BSP/pid/pid.c
     BSP/encoder/encoder.c
     BSP/motor/motor.c

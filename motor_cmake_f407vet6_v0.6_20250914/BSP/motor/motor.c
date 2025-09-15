@@ -1,6 +1,5 @@
 
 #include "motor.h"
-#include "tb6612_config.h"
 #include "tb6612_init.h"
 #include "types.h"
 

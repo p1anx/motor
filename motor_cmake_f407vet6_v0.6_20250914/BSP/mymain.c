@@ -1,12 +1,8 @@
 #include "mymain.h"
-#include "motor.h"
-#include "motor_config.h"
-#include "pid_init.h"
-#include "stm32f4xx_hal.h"
-#include "stm32f4xx_hal_tim.h"
-#include "stm32f4xx_hal_uart.h"
-#include "tim.h"
-#include "uart_it.h"
+// #include "stm32f4xx_hal.h"
+// #include "stm32f4xx_hal_tim.h"
+// #include "stm32f4xx_hal_uart.h"
+// #include "tim.h"
 #include <stdint.h>
 
 void test(void)
@@ -43,18 +39,8 @@ uint8_t rxBuffer;
 // char *rxBuffer;
 int mymain(void)
 {
-    // motor_run();
-    // test();
-    // time_test();
-    HAL_UART_Receive_IT(&MY_UART_1, (uint8_t *)&rxBuffer, 1);
-    // HAL_UART_Receive_IT(&MY_UART_1, (uint8_t
-    // *)pRxBuffer, RXBUFFER);
+    // HAL_UART_Receive_IT(&MY_UART_1, (uint8_t *)&rxBuffer, 1);
 
-    // HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1);
-    // __HAL_TIM_SET_PRESCALER(&htim1, PWM_TIM_PSC
-    // - 1);
-    // __HAL_TIM_SET_AUTORELOAD(&htim1,
-    // PWM_RESOLUTION - 1);
-    motor_main();
+    // motor_main();
     return 0;
 }

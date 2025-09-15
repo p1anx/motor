@@ -6,15 +6,17 @@
 #include "encoder.h"
 #include "types.h"
 
+#include "stm32f4xx.h"
+#include "stm32f4xx_hal.h"
 struct TB6612_t
 {
 
-    GPIO_TypeDef *AIN1_GPIO_Port;
-    uint16_t AIN1_GPIO_Pin;
-    GPIO_TypeDef *AIN2_GPIO_Port;
-    uint16_t AIN2_GPIO_Pin;
+    GPIO_TypeDef *IN1_GPIO_Port;
+    uint16_t IN1_GPIO_Pin;
+    GPIO_TypeDef *IN2_GPIO_Port;
+    uint16_t IN2_GPIO_Pin;
     GPIO_TypeDef *STBY_GPIO_Port;
-    uint16_t STBY_GPIO_Pin;
+    uint16_t STBYx_GPIO_Pin;
     Encoder_t *encoder;
     PWM_t *pwm;
 };
