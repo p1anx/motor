@@ -11,7 +11,12 @@ struct PWM_t
 
     int resolution;
     int frequency;
+    int (*get_psc)(PWM_t *pwm);
     float duty;
+    int arr;
 };
 int pwm_init(PWM_t *pwm);
+int pwm_calculatePSC(PWM_t *pwm);
+int pwm_setPWM(PWM_t *pwm);
+int pwm_setDuty(PWM_t *pwm, float duty);
 #endif // !__MOTOR_H

@@ -7,8 +7,8 @@ IndentWidth: 4
 # # 使用空格还是制表符
 # UseTab: Never
 #
-# # 列宽限制
-# ColumnLimit: 100
+# 列宽限制
+ColumnLimit: 100
 #
 # # 大括号换行风格
 # BreakBeforeBraces: Attach

@@ -15,7 +15,7 @@ set(CMAKE_C_EXTENSIONS ON)
 
 # Define the build type
 if(NOT CMAKE_BUILD_TYPE)
-  set(CMAKE_BUILD_TYPE "Debug")
+    set(CMAKE_BUILD_TYPE "Debug")
 endif()
 
 # Set the project name
@@ -49,27 +49,31 @@ target_link_directories(${CMAKE_PROJECT_NAME} PRIVATE
 target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     # Add user sources here
     BSP/mymain.c
-    BSP/led/led.c
-    BSP/key/key.c
+    # BSP/led/led.c
+    # BSP/key/key.c
     # BSP/pwm/bit_stream.c
     # BSP/pwm/pid_init.c
     # BSP/pwm/tb6612.c
     # BSP/pwm/qam_test.c
-    # BSP/timer/timer_it.c
+    BSP/timer/timer_it.c
     BSP/usart/usart_mx.c
-    # BSP/usart/uart_it.c
+    BSP/usart/uart_it.c
     # BSP/pwm/motor.c
     BSP/pid/pid.c
     BSP/encoder/encoder.c
     BSP/motor/motor.c
     BSP/motor/pwm.c
     BSP/motor/tb6612_init.c
+    BSP/test/test.c
+    BSP/stm32_hal.c
+    BSP/common/common.c
 )
 
 # Add include paths
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
     # Add user defined include paths
     BSP/
+    BSP/common
     BSP/led
     BSP/key
     BSP/pwm
@@ -78,6 +82,7 @@ target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
     BSP/pid
     BSP/encoder
     BSP/motor
+    BSP/test
 
 )
 
@@ -113,13 +118,13 @@ find_program(GDB arm-none-eabi-gdb)
 find_program(KILL pkill)  # Linux/macOS
 # 对于 Windows 使用 taskkill
 if(WIN32)
-  find_program(KILL taskkill)
+    find_program(KILL taskkill)
 endif()
 # Set upload command based on the selected tool
 if(UPLOAD_TOOL STREQUAL "jlink")
-  set(INTERFACE_CFG "interface/jlink.cfg")
+    set(INTERFACE_CFG "interface/jlink.cfg")
 elseif(UPLOAD_TOOL STREQUAL "cmsis-dap")
-  set(INTERFACE_CFG "interface/cmsis-dap.cfg")
+    set(INTERFACE_CFG "interface/cmsis-dap.cfg")
 endif()
 
 add_custom_target(flash

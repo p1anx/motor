@@ -1,4 +1,38 @@
 #include "pid.h"
+#include "stm32_hal.h"
+#include "stm32f4xx_hal_def.h"
+#include "stm32f4xx_hal_tim.h"
+#include "system_stm32f4xx.h"
+#include <stdio.h>
+void PID_Init(PIDController_t *pid, TIM_HandleTypeDef *tim)
+{
+    if (HAL_TIM_Base_Start_IT(tim) != HAL_OK)
+    {
+        printf("[error] pid timer init\n");
+    }
+    else
+    {
+        printf("[ok] pid timer init\n");
+    }
+    pid->Kp = 0.01;
+    pid->Ki = 0;
+    pid->Kd = 0;
+    pid->integral_max = 10;
+    pid->integral_min = -10;
+    pid->output_max = 1;
+    pid->output_min = -1;
+    pid->prev_error = 0;
+    pid->prev_error_2 = 0;
+    pid->dt = PID_UPDATE_TIME;
+    pid->frequency = 1e6;
+    pid->tim = tim;
+
+    __HAL_TIM_SET_PRESCALER(pid->tim, SystemCoreClock / pid->frequency - 1);
+    __HAL_TIM_SetAutoreload(pid->tim, pid->dt * pid->frequency - 1);
+}
+// void PID_UpdateTime_Init(PIDController_t *pid)
+// {
+// }
 float PID_Update(PIDController_t *pid, float setpoint, float measurement)
 {
     float error = setpoint - measurement;
@@ -27,13 +61,14 @@ float PID_Update(PIDController_t *pid, float setpoint, float measurement)
     else if (pid->output < pid->output_min)
         pid->output = pid->output_min;
 
-    static int time_count = 0;
-    if (time_count == 100)
-    {
-        time_count = 0;
-        printf("%.2f, %.2f\n", setpoint, measurement);
-    }
-    time_count++;
+    // static int time_count = 0;
+    // if (time_count == 100)
+    // {
+    //     time_count = 0;
+    //     DEBUG_PRINT("%.2f, %.2f\n", setpoint, measurement);
+    //     printf("%.2f, %.2f\n", setpoint, measurement);
+    // }
+    // time_count++;
 
     return pid->output;
 }

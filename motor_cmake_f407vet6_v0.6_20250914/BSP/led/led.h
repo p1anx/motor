@@ -1,5 +1,6 @@
 #ifndef __LED_H
 #define __LED_H
+#include "stm32_hal.h"
 
 #define LED1_IS_AVAILABLE 1
 #define LED2_IS_AVAILABLE 1

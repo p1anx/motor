@@ -42,5 +42,7 @@ int mymain(void)
     // HAL_UART_Receive_IT(&MY_UART_1, (uint8_t *)&rxBuffer, 1);
 
     // motor_main();
+
+    test_main();
     return 0;
 }

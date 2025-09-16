@@ -2,6 +2,7 @@
 #define __MY_STM32_HAL_H
 
 /* 根据预定义的宏来包含相应的头文件 */
+#undef DEBUG
 
 #ifdef STM32F103xx
 #include "stm32f1xx_hal.h"
@@ -53,9 +54,11 @@
 
 /* 通用的调试宏 */
 #ifdef DEBUG
-#define DBG_PRINT(fmt, ...) printf("[%s] " fmt "\n", MCU_SERIES, ##__VA_ARGS__)
+// #define DEBUG_PRINT(fmt, ...) printf("[%s] " fmt "\n", MCU_SERIES, ##__VA_ARGS__)
+#define DEBUG_PRINT(fmt, ...) printf(fmt "\n", ##__VA_ARGS__)
 #else
-#define DBG_PRINT(fmt, ...)
+#define DEBUG_PRINT(fmt, ...)
 #endif
 
+void delay_ms(int ms);
 #endif /* __STM32_HAL_H */

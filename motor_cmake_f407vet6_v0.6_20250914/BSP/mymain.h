@@ -17,7 +17,7 @@
 
 // #include "bit_stream.h"
 #include "motor.h"
-
+#include "test.h"
 int mymain(void);
 
 #endif // !__MY_MAIN_H

@@ -2,6 +2,9 @@
 #define __PID_H
 
 #include "stm32_hal.h"
+#include "stm32f4xx_hal_tim.h"
+#define PID_UPDATE_TIM TIM4
+#define PID_UPDATE_TIME 0.1 // 单位s
 typedef struct
 {
     float Kp;           // 比例增益
@@ -19,8 +22,12 @@ typedef struct
     float target_position;
     float target_angle;
     float dt;
+    int frequency;
+    TIM_HandleTypeDef *tim;
 } PIDController_t;
 
+// void PID_Init(PIDController_t *pid);
+void PID_Init(PIDController_t *pid, TIM_HandleTypeDef *tim);
 float PID_Update(PIDController_t *pid, float setpoint, float measurement);
 float Incremental_PID_Update(PIDController_t *pid, float setpoint, float measurement);
 #endif // !__PID_H
