@@ -16,11 +16,6 @@ extern TIM_HandleTypeDef htim4;
 #define pid_htim htim4
 // #define PID_UPDATE_TIM TIM4
 
-// encoder timer
-extern TIM_HandleTypeDef htim8;
-#define encoder_htim htim8
-// #define ENCODER1_TIM TIM8
-
 #define TB6612_PWM1_GPIO_PIN GPIO_PIN_9
 #define TB6612_PWM1_GPIO_PORT GPIOE
 extern TIM_HandleTypeDef htim1;
@@ -53,10 +48,15 @@ struct TB6612_t
     int direction;
 };
 
+int tb6612_GPIO_Init(TB6612_t *tb6612);
 int tb6612_init(TB6612_t *tb6612);
 
 int tb6612_setDirection(TB6612_t *tb6612, int direction);
 int tb6612_enable(TB6612_t *tb6612);
 int tb6612_disable(TB6612_t *tb6612);
+
+int tb6612_linkEncoder(TB6612_t *tb6612, Encoder_t *encoder);
+int tb6612_linkPWM(TB6612_t *tb6612, PWM_t *pwm);
+
 #endif // !__MOTOR_H
 //

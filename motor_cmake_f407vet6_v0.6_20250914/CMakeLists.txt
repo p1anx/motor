@@ -21,7 +21,7 @@ endif()
 # Set the project name
 set(CMAKE_PROJECT_NAME motor_cmake_f407vet6_v0)
 
-# Include toolchain file
+
 include("cmake/gcc-arm-none-eabi.cmake")
 
 # Enable compile command to ease indexing with e.g. clangd
@@ -67,6 +67,7 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     BSP/test/test.c
     BSP/stm32_hal.c
     BSP/common/common.c
+    BSP/qam/qam.c
 )
 
 # Add include paths
@@ -83,6 +84,7 @@ target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
     BSP/encoder
     BSP/motor
     BSP/test
+    BSP/qam
 
 )
 
@@ -101,6 +103,7 @@ target_link_libraries(${CMAKE_PROJECT_NAME}
     # -fdiagnostics-color=always
     # Add user defined libraries
 )
+
 # 设置 C 编译器彩色输出
 # set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fdiagnostics-color=always")
 set(CMAKE_COLOR_DIAGNOSTICS ON)

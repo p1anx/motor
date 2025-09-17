@@ -3,9 +3,18 @@
 
 #include "stm32_hal.h"
 #include "stm32f4xx_hal_tim.h"
+// #include "encoder.h"
+#include "types.h"
+
+extern TIM_HandleTypeDef htim4;
+#define pid_update_htim htim4
 #define PID_UPDATE_TIM TIM4
-#define PID_UPDATE_TIME 0.1 // 单位s
-typedef struct
+
+#define PID_UPDATE_RESOLUTION 1e6 // 单位Hz(1e6Hz --> 1us)
+#define PID_UPDATE_TIME 0.01      // 单位s
+#define PID_TIM_CLK 84e6          // 单位Hz
+
+struct PIDController_t
 {
     float Kp;           // 比例增益
     float Ki;           // 积分增益
@@ -22,12 +31,15 @@ typedef struct
     float target_position;
     float target_angle;
     float dt;
+    float *pdt;
     int frequency;
+    int resolution;
     TIM_HandleTypeDef *tim;
-} PIDController_t;
+    int tim_clk;
+};
 
-// void PID_Init(PIDController_t *pid);
-void PID_Init(PIDController_t *pid, TIM_HandleTypeDef *tim);
+void PID_Init(PIDController_t *pid);
 float PID_Update(PIDController_t *pid, float setpoint, float measurement);
 float Incremental_PID_Update(PIDController_t *pid, float setpoint, float measurement);
+int PID_dt_linkToEncoder(PIDController_t *pid, Encoder_t *encoder);
 #endif // !__PID_H

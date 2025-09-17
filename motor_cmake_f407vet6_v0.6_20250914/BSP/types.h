@@ -7,4 +7,5 @@ typedef struct Motor_t Motor_t;
 typedef struct Encoder_t Encoder_t;
 typedef struct TB6612_t TB6612_t;
 typedef struct PWM_t PWM_t;
+typedef struct PIDController_t PIDController_t;
 #endif
