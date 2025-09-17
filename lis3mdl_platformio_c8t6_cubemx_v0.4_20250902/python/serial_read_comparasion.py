@@ -14,10 +14,10 @@ import os
 class Config:
     def __init__(self):
         self.serial_port = '/dev/ttyUSB0'
-        self.rxData_num = 320*100
+        self.rxData_num = 320*10
         # self.file_path = './data/fc2Hz2Hz_3/'
-        self.file_path = './data/16qam_fc2Hz1Hz_3/'
-        # self.file_path = './data/test/'
+        # self.file_path = './data/qam4_fc1Hz1Hz_2/'
+        self.file_path = './data/test/'
         
 
 config = Config() 

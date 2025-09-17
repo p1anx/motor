@@ -367,6 +367,6 @@ def plot_constellation(xyz= "x", g_n_point = 20, start = 0, step = 280, folderNa
 
     # plt.savefig(f"{folderName}_{g_n_point}p_{xyz}_step{step}.png", dpi=300)
     plt.savefig(
-        f"{folderName}/_{g_n_point}p_{xyz}_step{step}_test_filtered_bandpass.png",
+        f"{folderName}/_{g_n_point}p_{xyz}_start{start}_step{step}_test_filtered_bandpass.png",
         dpi=300,
     )
