@@ -18,11 +18,11 @@ if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE "Debug")
 endif()
 
+include("cmake/gcc-arm-none-eabi.cmake")
 # Set the project name
 set(CMAKE_PROJECT_NAME c8t6_cmake)
 
 
-include("cmake/gcc-arm-none-eabi.cmake")
 # Enable compile command to ease indexing with e.g. clangd
 set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 
@@ -75,10 +75,11 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     BSP/FOC/BLDCMotor.c
     BSP/FOC/lowpass_filter.c
     BSP/FOC/BLDCDriver/BLDCDriver.c
-    BSP/FOC/BLDCDriver/BLDCDriver6PWM.c
+    # BSP/FOC/BLDCDriver/BLDCDriver6PWM.c
     BSP/FOC/pid/pid.c
     BSP/FOC/encoder/encoder.c
     BSP/FOC/encoder/encoder_as5600.c
+    BSP/FOC/currentSense/currentSense.c
 )
 
 # Add include paths
@@ -102,6 +103,7 @@ target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
     BSP/FOC/pid
     BSP/FOC/encoder
     BSP/FOC/BLDCDriver
+    BSP/FOC/currentSense
 )
 
 # Add project symbols (macros)
