@@ -1,4 +1,6 @@
 #include "foc_base.h"
+#include "BLDCMotor.h"
+#include "foc_motor.h"
 #include "math.h"
 #include "mymain.h"
 
@@ -110,6 +112,12 @@ float _electricalAngle(float shaft_angle, int pole_pairs)
 float getElectricalAngle(void)
 {
     shaft_angle = getAngle();
+    // return _normalizeAngle(shaft_angle * pole_pairs);
+    return _normalizeAngle(_electricalAngle(shaft_angle, PP) - zero_electric_angle);
+}
+float foc_getElectricalAngle(BLDCMotor_t *motor)
+{
+    shaft_angle = FOCMotor_shaftAngle(&motor->foc_motor);
     // return _normalizeAngle(shaft_angle * pole_pairs);
     return _normalizeAngle(_electricalAngle(shaft_angle, PP) - zero_electric_angle);
 }

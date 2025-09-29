@@ -145,6 +145,8 @@ typedef struct
     // 累积位置
     int32_t position;     // 累积位置
     int16_t lastPosition; // 上次位置
+    float angle;
+    float velocity;
 } AS5600_t;
 
 // ==================== 函数声明 ====================
@@ -233,6 +235,7 @@ void AS5600_Example_ReadSpeed(void);
 void AS5600_Example_ReadAngle(void);
 
 void Encoder_AS5600_Init(AS5600_t *as5600, I2C_HandleTypeDef *hi2c);
+// bool AS5600_Init(AS5600_t *sensor, I2C_HandleTypeDef *hi2c);
 void Encoder_AS5600_ReadAngle(AS5600_t *as5600);
 #endif // AS5600_H
 //

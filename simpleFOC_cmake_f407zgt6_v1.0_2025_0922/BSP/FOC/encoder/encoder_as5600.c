@@ -487,6 +487,7 @@ float AS5600_GetAngularSpeed(AS5600_t *sensor, uint8_t mode, bool update)
     uint32_t now = getMicros();
     int angle = sensor->lastReadAngle;
     uint32_t deltaT = now - sensor->lastMeasurement;
+    printf("get angle time = %d\n", deltaT);
     int deltaA = angle - sensor->lastAngle;
 
     // 假设两次测量之间旋转不超过180度

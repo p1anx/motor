@@ -17,8 +17,8 @@ set(CMAKE_C_EXTENSIONS ON)
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE "Debug")
 endif()
-
 include("cmake/gcc-arm-none-eabi.cmake")
+
 # Set the project name
 set(CMAKE_PROJECT_NAME f407zgt6_cmake)
 
@@ -58,7 +58,9 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     BSP/FOC/lowpass_filter.c
     BSP/FOC/pwm.c
     BSP/FOC/encoder/encoder.c
+    BSP/FOC/encoder/as5600.c
     BSP/FOC/encoder/encoder_as5600.c
+    BSP/FOC/timer/timer.c
 )
 
 # Add include paths
@@ -72,6 +74,7 @@ target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
     BSP/FOC/pid/
     BSP/FOC/encoder
     BSP/FOC/
+    BSP/FOC/timer
 )
 
 # Add project symbols (macros)

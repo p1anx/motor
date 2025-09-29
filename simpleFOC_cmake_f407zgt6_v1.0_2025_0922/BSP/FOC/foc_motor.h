@@ -1,6 +1,7 @@
 #ifndef __FOC_MOTOR_H
 #define __FOC_MOTOR_H
 #include "BLDCDriver.h"
+#include "encoder.h"
 #include "lowpass_filter.h"
 #include "mymain.h"
 #include "pid.h"
@@ -110,6 +111,7 @@ struct FOCMotor_t
      * - HallSensor
      */
     Sensor_t *sensor;
+    Encoder_t *encoder;
 };
 
 void FOCMotor_init(FOCMotor_t *motor);
@@ -119,4 +121,5 @@ float FOCMotor_shaftVelocity(FOCMotor_t *motor);
 float FOCMotor_shaftAngle(FOCMotor_t *motor);
 
 void FOCMotor_linkSensor(FOCMotor_t *motor, Sensor_t *_sensor);
+void FOCMotor_linkEncoder(FOCMotor_t *motor, Encoder_t *encoder);
 #endif // !__FOC_MOTOR_H

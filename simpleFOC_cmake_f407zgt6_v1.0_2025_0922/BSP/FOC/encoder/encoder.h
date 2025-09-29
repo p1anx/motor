@@ -25,7 +25,7 @@ extern "C"
     typedef struct
     {
         Sensor_t sensor; //!< Base sensor structure (must be first member)
-        AS5600_t as5600;
+        AS5600_t *as5600;
 
         // Hardware pins
         int pinA;      //!< encoder hardware pin A
@@ -61,8 +61,10 @@ extern "C"
      * @param ppr - impulses per rotation (cpr=ppr*4)
      * @param index - index pin number (0 if not used)
      */
-    void Encoder_init(Encoder_t *encoder, int encA, int encB, float ppr, int index);
+    // void Encoder_init(Encoder_t *encoder, int encA, int encB, float ppr, int index);
 
+    void Encoder_init(Encoder_t *encoder);
+    void Encoder_linkAS5600(Encoder_t *encoder, AS5600_t *as5600);
     /**
      * Initialize encoder pins
      * @param encoder - Pointer to Encoder structure
