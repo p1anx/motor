@@ -360,6 +360,7 @@ uint16_t AS5600_ReadAngle(AS5600_t *sensor)
         return 0;
 
     uint16_t value = AS5600_ReadReg2(sensor, AS5600_REG_ANGLE);
+    int dir = -1;
     if (sensor->error != AS5600_OK)
     {
         return sensor->lastReadAngle;
@@ -369,7 +370,11 @@ uint16_t AS5600_ReadAngle(AS5600_t *sensor)
         value += sensor->offset;
     value &= 0x0FFF;
 
-    if ((sensor->directionPin == AS5600_SW_DIRECTION_PIN) && (sensor->direction == AS5600_COUNTERCLOCK_WISE))
+    // if ((sensor->directionPin == AS5600_SW_DIRECTION_PIN) && (sensor->direction == AS5600_COUNTERCLOCK_WISE))
+    // {
+    //     value = (4096 - value) & 0x0FFF;
+    // }
+    if (dir == AS5600_DIR)
     {
         value = (4096 - value) & 0x0FFF;
     }
@@ -496,7 +501,6 @@ float AS5600_GetAngularSpeed(AS5600_t *sensor, uint8_t mode, bool update)
     uint32_t now = getMicros();
     int angle = sensor->lastReadAngle;
     uint32_t deltaT = now - sensor->lastMeasurement;
-    printf("get angle time = %d\n", deltaT);
     int deltaA = angle - sensor->lastAngle;
 
     // 假设两次测量之间旋转不超过180度

@@ -5,6 +5,8 @@
 #include "stm32f4xx.h"
 #include "stm32f4xx_hal_adc.h"
 #include "adc.h"
+#include "BLDCMotor.h"
+
 extern ADC_HandleTypeDef hadc1;
 extern ADC_HandleTypeDef hadc2;
 extern ADC_HandleTypeDef hadc3;
@@ -27,6 +29,9 @@ struct CurrentSense_t
     ADC_HandleTypeDef *adc3;
     ADC_HandleTypeDef *adc;
     float offset;
+    float offset_a;
+    float offset_b;
+    float offset_c;
     float offset3[3];
     float i3[3];
     float i_a, i_b, i_c;
@@ -42,4 +47,13 @@ float CurrentSense_getCurrent(CurrentSense_t *currentSense);
 float CurrentSense_getRawVoltage(CurrentSense_t *currentSense);
 float CurrentSense_get3Current(CurrentSense_t *currentSense);
 float CurrentSense_get3Offset(CurrentSense_t *currentSense);
+
+float CurrentSense_read3Current(CurrentSense_t *pCurrentSense);
+
+float CurrentSense_readCurrent(CurrentSense_t *pCurrentSense);
+
+void CurrentSense_calibrate(CurrentSense_t *pCurrentSense);
+
+float CurrentSense_readRawCurrent(ADC_HandleTypeDef *pADC);
+// float CurrentSense_getCurrentDQ(BLDCMotor_t *motor, CurrentSense_t *currentSense);
 #endif // !__CURRENTSENSE_H

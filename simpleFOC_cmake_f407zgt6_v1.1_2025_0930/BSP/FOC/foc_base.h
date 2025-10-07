@@ -59,4 +59,6 @@ void setPwm(float Ua, float Ub, float Uc);
 void alignSensor(void);
 void Park_Transform(float I_alpha, float I_beta, float theta, float *Id, float *Iq);
 void Clarke_Transform(float Ia, float Ib, float *I_alpha, float *I_beta);
+
+void Debug_Transformations(void);
 #endif

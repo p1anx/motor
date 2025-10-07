@@ -1,5 +1,6 @@
 
 #include "BLDCMotor.h"
+#include "currentSense.h"
 #include "encoder.h"
 #include "foc_base.h"
 #include "foc_motor.h"
@@ -7,10 +8,20 @@
 #include "mymain.h"
 #include "pid.h"
 #include "as5600.h"
+#include "stm32_hal.h"
+#include <stdio.h>
 
-void BLDCMotor_enable(BLDCMotor_t *motor)
+int BLDCMotor_enable(BLDCMotor_t *motor)
 {
     HAL_GPIO_WritePin(motor->enable_Port, motor->enable_Pin, SET);
+    motor->isEnable = 1;
+    return 0;
+}
+int BLDCMotor_disable(BLDCMotor_t *motor)
+{
+    HAL_GPIO_WritePin(motor->enable_Port, motor->enable_Pin, RESET);
+    motor->isEnable = 0;
+    return 0;
 }
 void BLDCDriver_writeDutyCycle3PWM(float dc_a, float dc_b, float dc_c)
 {
@@ -74,7 +85,10 @@ void BLDCDriver6PWM_setPwm(BLDCDriver_t *driver, float Ua, float Ub, float Uc)
 void BLDCMotor_setPhaseVoltage(BLDCMotor_t *motor, float Uq, float Ud, float angle_el)
 {
     if (!motor || !motor->driver)
+    {
+        PRINT_ERROR("setPhaseVoltage---motor or driver problem");
         return;
+    }
 
     // Check if this is a 6PWM driver by checking function pointer
     // For 6PWM drivers, we can use centered modulation more effectively
@@ -471,12 +485,12 @@ void BLDCMotor_init(BLDCMotor_t *motor, int pp)
 
     // Initialize base FOCMotor
     // 1. pointer FOCMotor
-    FOCMotor_init(motor->FOCMotor);
+    // FOCMotor_init(motor->FOCMotor);
+    // motor->FOCMotor->pole_pairs = pp;
     // 2.
     FOCMotor_init(&motor->foc_motor);
-
     // save pole pairs number
-    motor->FOCMotor->pole_pairs = pp;
+    motor->foc_motor.pole_pairs = pp;
 
     // Initialize phase voltages
     motor->Ua = 0;
@@ -491,6 +505,7 @@ void BLDCMotor_init(BLDCMotor_t *motor, int pp)
     // Initialize open loop timestamp
     motor->open_loop_timestamp = 0;
     motor->angle = 0;
+    PRINT_OK("BLDCMotor init");
 }
 
 void BLDCMotor_linkDriver(BLDCMotor_t *motor, BLDCDriver_t *_driver)
@@ -498,19 +513,24 @@ void BLDCMotor_linkDriver(BLDCMotor_t *motor, BLDCDriver_t *_driver)
     if (!motor)
         return;
     motor->driver = _driver;
-    printf("linked to driver\n");
+
+    PRINT_OK("linked to driver");
 }
 void BLDCMotor_linkEncoder(BLDCMotor_t *motor, Encoder_t *encoder)
 {
     if (!motor)
+    {
+        PRINT_ERROR("motor isn't ready");
         return;
+    }
+
     // motor->foc_motor.encoder = encoder;
     // 1.
     // FOCMotor_linkEncoder(motor->FOCMotor, encoder);
     // 2.
     FOCMotor_linkEncoder(&motor->foc_motor, encoder);
 
-    printf("linked to driver\n");
+    PRINT_OK("linked ot encoder");
 }
 void BLDCMotor_linkAS5600(BLDCMotor_t *motor, AS5600_t *as5600)
 {
@@ -525,12 +545,43 @@ float BLDCMotor_getVelocity(BLDCMotor_t *motor)
     return FOCMotor_shaftVelocity(&motor->foc_motor);
     // return AS5600_getVelocity(motor->as5600);
 }
+float BLDCMotor_getVelocityRPM(BLDCMotor_t *motor)
+{
+    // return FOCMotor_shaftVelocity(motor->FOCMotor);
+    return FOCMotor_shaftVelocityRPM(&motor->foc_motor);
+    // return AS5600_getVelocity(motor->as5600);
+}
 float BLDCMotor_getAngle(BLDCMotor_t *motor)
 {
     // return _electricalAngle(FOCMotor_shaftAngle(&motor->foc_motor), motor->foc_motor.pole_pairs);
     // return FOCMotor_shaftAngle(motor->FOCMotor);
     return FOCMotor_shaftAngle(&motor->foc_motor);
     // return AS5600_getAngle(motor->as5600);
+}
+float BLDCMotor_getElectricalAngle(BLDCMotor_t *motor)
+{
+    motor->angle = 1 * BLDCMotor_getAngle(motor);
+    motor->e_angle = _normalizeAngle(_electricalAngle(motor->angle, motor->foc_motor.pole_pairs));
+    return motor->e_angle;
+}
+
+float BLDCMotor_getCurrentDQ(BLDCMotor_t *motor)
+{
+    float i_a, i_b, i_alpha, i_beta, i_q, i_d;
+
+    // 1.
+    // CurrentSense_get3Current(motor->currentSense);
+    // i_a = motor->currentSense->i3[0];
+    // i_b = motor->currentSense->i3[1];
+    // 2.
+    CurrentSense_read3Current(motor->currentSense);
+    i_a = -motor->currentSense->i_a;
+    i_b = -motor->currentSense->i_b;
+    Clarke_Transform(i_a, i_b, &i_alpha, &i_beta);
+    Park_Transform(i_alpha, i_beta, motor->e_angle, &i_d, &i_q);
+    motor->foc_motor.i_d = i_d;
+    motor->foc_motor.i_q = i_q;
+    return 0;
 }
 
 int BLDCMotor_alignSensor(BLDCMotor_t *motor)
@@ -599,13 +650,14 @@ void BLDCMotor_move(BLDCMotor_t *motor, float new_target)
     // printf("hello move\n");
     // set internal target variable
     if (new_target != NOT_SET)
-        motor->foc_motor.target = new_target;
+        motor->target = new_target;
     // get angular velocity
     // motor->foc_motor.shaft_velocity = FOCMotor_shaftVelocity(&motor->foc_motor);
     // motor->foc_motor.shaft_velocity = LowPassFilter(&motor->foc_motor.LPF_velocity, motor->foc_motor.shaft_velocity);
     // choose control loop
     // printf("hello move\n");
-    switch (motor->FOCMotor->controller)
+    // switch (motor->FOCMotor->controller)
+    switch (motor->foc_motor.controller)
     {
     case ControlType_voltage:
         break;
@@ -633,10 +685,12 @@ void BLDCMotor_move(BLDCMotor_t *motor, float new_target)
         // BLDCMotor_setPhaseVoltage(motor, motor->foc_motor.voltage_q, 0, _electricalAngle(motor->foc_motor.shaft_angle, motor->foc_motor.pole_pairs));
 
         // 2.
-        motor->angle = BLDCMotor_getAngle(motor);
-        motor->velocity = BLDCMotor_getVelocity(motor);
-        motor->foc_motor.voltage_q = PIDController_update(motor->pid, motor->target - motor->velocity);
-        BLDCMotor_setPhaseVoltage(motor, motor->foc_motor.voltage_q, 0, _electricalAngle(motor->angle, motor->foc_motor.pole_pairs));
+        // motor->angle = BLDCMotor_getAngle(motor);
+        // motor->velocity = BLDCMotor_getVelocity(motor);
+        // motor->foc_motor.voltage_q = PIDController_update(motor->pid, motor->target - motor->velocity);
+        // BLDCMotor_setPhaseVoltage(motor, motor->foc_motor.voltage_q, 0, _electricalAngle(motor->angle, motor->foc_motor.pole_pairs));
+        // 3.
+        BLDCMotor_velocityClosedLoop_without_i(motor, new_target);
         // motor->foc_motor.voltage_d = 0;
         break;
     case ControlType_velocity_openloop:
@@ -648,6 +702,12 @@ void BLDCMotor_move(BLDCMotor_t *motor, float new_target)
         // loopFOC should not be called
         motor->foc_motor.shaft_angle_sp = motor->foc_motor.target;
         // BLDCMotor_angleOpenloop(motor, motor->foc_motor.shaft_angle_sp);
+        break;
+    case ControlType_velocityClosedLoop:
+        BLDCMotor_velocityClosedLoop(motor, new_target);
+        break;
+    case ControlType_currentClosedLoop:
+        BLDCMotor_currentClosedLoop(motor, new_target);
         break;
     default:
         printf("other controller type\n");
@@ -667,11 +727,24 @@ void BLDCMotor_velocityOpenloop(BLDCMotor_t *motor, float target_velocity)
     float Ts = (now_us - motor->open_loop_timestamp) * 1e-3f;
 
     // calculate the necessary angle to achieve target velocity
-    motor->angle = _normalizeAngle(motor->angle + target_velocity * Ts);
+
+    float angle = _normalizeAngle(motor->angle + target_velocity * Ts);
+    motor->angle = angle;
 
     // set the maximal allowed voltage (voltage_limit) with the necessary angle
-    float e_angle = _electricalAngle(motor->angle, motor->FOCMotor->pole_pairs);
-    BLDCMotor_setPhaseVoltage(motor, motor->FOCMotor->voltage_limit, 0, e_angle);
+    // 1.
+    // float e_angle = _electricalAngle(motor->angle, motor->FOCMotor->pole_pairs);
+    // BLDCMotor_setPhaseVoltage(motor, motor->FOCMotor->voltage_limit, 0, e_angle);
+    // 2.
+    // float e_angle = _electricalAngle(motor->angle, motor->foc_motor.pole_pairs);
+    // 3.
+    float e_angle = _normalizeAngle(_electricalAngle(angle, motor->foc_motor.pole_pairs));
+    motor->e_angle = e_angle;
+    BLDCMotor_setPhaseVoltage(motor, motor->foc_motor.voltage_limit, 0, e_angle);
+    motor->open_loop_timestamp = now_us;
+
+    // DEBUG_PRINT("velocity open loop");
+
     // printf("velocity openloop\n");
     // 1.
     // printf("Ts = %f\n", Ts);
@@ -681,16 +754,86 @@ void BLDCMotor_velocityOpenloop(BLDCMotor_t *motor, float target_velocity)
     // printf("pp = %d\n", motor->FOCMotor->pole_pairs);
 
     // save timestamp for next call
-    motor->open_loop_timestamp = now_us;
 }
-int BLDCMotor_velocityClosedLoop(BLDCMotor_t *motor, float target)
+int BLDCMotor_velocityClosedLoop_v0(BLDCMotor_t *motor, float target)
 {
-    motor->velocity = BLDCMotor_getVelocity(motor);
+    motor->velocity = BLDCMotor_getVelocityRPM(motor);
     motor->angle = BLDCMotor_getAngle(motor);
+    float e_angle = _electricalAngle(motor->angle, motor->foc_motor.pole_pairs);
     motor->foc_motor.voltage_q = PIDController_update(motor->pid, target - motor->velocity);
-    BLDCMotor_setPhaseVoltage(motor, motor->foc_motor.voltage_q, 0, motor->angle);
+    BLDCMotor_setPhaseVoltage(motor, motor->foc_motor.voltage_q, 0, _normalizeAngle(e_angle));
+    // DEBUG_PRINT("e angle = %f", e_angle);
+    // DEBUG_PRINT("pp  = %d", motor->foc_motor.pole_pairs);
+    return 0;
 }
 
+int BLDCMotor_velocityClosedLoop(BLDCMotor_t *motor, float target)
+{
+    float target_iq, target_id;
+    motor->velocity = BLDCMotor_getVelocityRPM(motor);
+    // printf("vel = %f\n", motor->velocity);
+    BLDCMotor_getElectricalAngle(motor);
+    BLDCMotor_getCurrentDQ(motor);
+    motor->velocity = LowPassFilter(&motor->foc_motor.LPF_velocity, motor->velocity);
+    motor->foc_motor.i_d = LowPassFilter(&motor->foc_motor.LPF_current_d, motor->foc_motor.i_d);
+    motor->foc_motor.i_q = LowPassFilter(&motor->foc_motor.LPF_current_q, motor->foc_motor.i_q);
+
+    target_iq = PIDController_update(motor->foc_motor.PID_velocityLoop, target - motor->velocity);
+    motor->foc_motor.voltage_q = PIDController_update(motor->foc_motor.PID_current_q, target_iq - motor->foc_motor.i_q);
+    motor->foc_motor.voltage_d = PIDController_update(motor->foc_motor.PID_current_d, 0 - motor->foc_motor.i_d);
+    // 1.
+    //  BLDCMotor_setPhaseVoltage(motor, motor->foc_motor.voltage_q, motor->foc_motor.voltage_d, motor->e_angle);
+    // 2.
+    BLDCMotor_setPhaseVoltage(motor, motor->foc_motor.voltage_q, motor->foc_motor.voltage_d, motor->e_angle);
+    // printf("%f, %f, %f, %f, %f\n", motor->foc_motor.i_q, motor->foc_motor.i_d, target, motor->foc_motor.voltage_q, motor->foc_motor.voltage_d);
+
+    return 0;
+}
+int BLDCMotor_velocityClosedLoop_without_i(BLDCMotor_t *motor, float target)
+{
+    motor->velocity = BLDCMotor_getVelocityRPM(motor);
+    // printf("vel = %f\n", motor->velocity);
+    BLDCMotor_getElectricalAngle(motor);
+    motor->velocity = LowPassFilter(&motor->foc_motor.LPF_velocity, motor->velocity);
+
+    motor->foc_motor.voltage_q = PIDController_update(motor->foc_motor.PID_velocityLoop, target - motor->velocity);
+    // 1.
+    //  BLDCMotor_setPhaseVoltage(motor, motor->foc_motor.voltage_q, motor->foc_motor.voltage_d, motor->e_angle);
+    // 2.
+    BLDCMotor_setPhaseVoltage(motor, motor->foc_motor.voltage_q, 0, motor->e_angle);
+    // printf("%f, %f, %f, %f, %f\n", motor->foc_motor.i_q, motor->foc_motor.i_d, target, motor->foc_motor.voltage_q, motor->foc_motor.voltage_d);
+
+    return 0;
+}
+int BLDCMotor_currentClosedLoop(BLDCMotor_t *motor, float target)
+{
+
+    motor->target = target;
+    // LowPassFilter_t lpf_d;
+    // LowPassFilter_t lpf_q;
+    //
+    // LowPassFilter_init(&lpf_d, 0.5);
+    // LowPassFilter_init(&lpf_q, 0.5);
+    BLDCMotor_getElectricalAngle(motor);
+    BLDCMotor_getCurrentDQ(motor);
+    // printf("current\n");
+
+    // printf("%f, %f\n", motor->foc_motor.i_d, motor->foc_motor.i_q);
+    // delay_ms(1);
+
+    motor->foc_motor.i_d = LowPassFilter(&motor->foc_motor.LPF_current_d, motor->foc_motor.i_d);
+    motor->foc_motor.i_q = LowPassFilter(&motor->foc_motor.LPF_current_q, motor->foc_motor.i_q);
+    motor->foc_motor.voltage_q = PIDController_update(motor->foc_motor.PID_current_q, target - motor->foc_motor.i_q);
+    motor->foc_motor.voltage_d = PIDController_update(motor->foc_motor.PID_current_d, 0 - motor->foc_motor.i_d);
+
+    BLDCMotor_setPhaseVoltage(motor, motor->foc_motor.voltage_q, motor->foc_motor.voltage_d, motor->e_angle);
+    // printf("%f, %f, %f, %f, %f\n", motor->foc_motor.i_q, motor->foc_motor.i_d, target, motor->foc_motor.voltage_q, motor->foc_motor.voltage_d);
+    // 1.
+    // printf(">");
+    // printf("iq:%f,id:%f,target:%f,", motor->foc_motor.i_q, motor->foc_motor.i_d, target);
+    // printf("vq:%f,vd:%f", motor->foc_motor.voltage_q, motor->foc_motor.voltage_d);
+    // printf("\r\n");
+}
 void BLDCMotor_run(BLDCMotor_t *motor)
 {
     BLDCMotor_velocityClosedLoop(motor, motor->target);

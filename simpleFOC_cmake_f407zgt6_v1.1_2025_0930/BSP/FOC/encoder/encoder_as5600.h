@@ -1,123 +1,123 @@
 // ==================== as5600.h ====================
 #ifndef AS5600_H
-#define AS5600_H
+    #define AS5600_H
 
-#include "stm32f4xx_hal.h"
-#include <math.h>
-#include <stdbool.h>
-#include <stdint.h>
+    #include "stm32f4xx_hal.h"
+    #include <math.h>
+    #include <stdbool.h>
+    #include <stdint.h>
 
-// ==================== 版本信息 ====================
-#define AS5600_LIB_VERSION "0.6.4_C"
+    // ==================== 版本信息 ====================
+    #define AS5600_LIB_VERSION "0.6.4_C"
+    #define AS5600_DIR -1
+    // ==================== I2C地址 ====================
+    #define AS5600_DEFAULT_ADDRESS 0x36
+    #define AS5600L_DEFAULT_ADDRESS 0x40
+    #define AS5600_SW_DIRECTION_PIN 255
 
-// ==================== I2C地址 ====================
-#define AS5600_DEFAULT_ADDRESS 0x36
-#define AS5600L_DEFAULT_ADDRESS 0x40
-#define AS5600_SW_DIRECTION_PIN 255
+    // ==================== 方向定义 ====================
+    #define AS5600_CLOCK_WISE 0        // 顺时针
+    #define AS5600_COUNTERCLOCK_WISE 1 // 逆时针
 
-// ==================== 方向定义 ====================
-#define AS5600_CLOCK_WISE 0        // 顺时针
-#define AS5600_COUNTERCLOCK_WISE 1 // 逆时针
+    // ==================== 转换常数 ====================
+    #define AS5600_RAW_TO_DEGREES (360.0f / 4096.0f)             // 0.087890625
+    #define AS5600_DEGREES_TO_RAW (4096.0f / 360.0f)             // 11.377778
+    #define AS5600_RAW_TO_RADIANS (2.0f * 3.14159265f / 4096.0f) // 0.00153398
+    #define AS5600_RAW_TO_RPM (60.0f / 4096.0f)                  // 0.01464844
 
-// ==================== 转换常数 ====================
-#define AS5600_RAW_TO_DEGREES (360.0f / 4096.0f)             // 0.087890625
-#define AS5600_DEGREES_TO_RAW (4096.0f / 360.0f)             // 11.377778
-#define AS5600_RAW_TO_RADIANS (2.0f * 3.14159265f / 4096.0f) // 0.00153398
-#define AS5600_RAW_TO_RPM (60.0f / 4096.0f)                  // 0.01464844
+    // ==================== 角速度模式 ====================
+    #define AS5600_MODE_DEGREES 0
+    #define AS5600_MODE_RADIANS 1
+    #define AS5600_MODE_RPM 2
 
-// ==================== 角速度模式 ====================
-#define AS5600_MODE_DEGREES 0
-#define AS5600_MODE_RADIANS 1
-#define AS5600_MODE_RPM 2
+    // ==================== 错误码 ====================
+    #define AS5600_OK 0
+    #define AS5600_ERROR_I2C_READ_0 -100
+    #define AS5600_ERROR_I2C_READ_1 -101
+    #define AS5600_ERROR_I2C_READ_2 -102
+    #define AS5600_ERROR_I2C_READ_3 -103
+    #define AS5600_ERROR_I2C_WRITE_0 -200
+    #define AS5600_ERROR_I2C_WRITE_1 -201
 
-// ==================== 错误码 ====================
-#define AS5600_OK 0
-#define AS5600_ERROR_I2C_READ_0 -100
-#define AS5600_ERROR_I2C_READ_1 -101
-#define AS5600_ERROR_I2C_READ_2 -102
-#define AS5600_ERROR_I2C_READ_3 -103
-#define AS5600_ERROR_I2C_WRITE_0 -200
-#define AS5600_ERROR_I2C_WRITE_1 -201
+    // ==================== 配置常量 ====================
+    // 输出模式
+    #define AS5600_OUTMODE_ANALOG_100 0
+    #define AS5600_OUTMODE_ANALOG_90 1
+    #define AS5600_OUTMODE_PWM 2
 
-// ==================== 配置常量 ====================
-// 输出模式
-#define AS5600_OUTMODE_ANALOG_100 0
-#define AS5600_OUTMODE_ANALOG_90 1
-#define AS5600_OUTMODE_PWM 2
+    // 电源模式
+    #define AS5600_POWERMODE_NOMINAL 0
+    #define AS5600_POWERMODE_LOW1 1
+    #define AS5600_POWERMODE_LOW2 2
+    #define AS5600_POWERMODE_LOW3 3
 
-// 电源模式
-#define AS5600_POWERMODE_NOMINAL 0
-#define AS5600_POWERMODE_LOW1 1
-#define AS5600_POWERMODE_LOW2 2
-#define AS5600_POWERMODE_LOW3 3
+    // PWM频率
+    #define AS5600_PWM_115 0
+    #define AS5600_PWM_230 1
+    #define AS5600_PWM_460 2
+    #define AS5600_PWM_920 3
 
-// PWM频率
-#define AS5600_PWM_115 0
-#define AS5600_PWM_230 1
-#define AS5600_PWM_460 2
-#define AS5600_PWM_920 3
+    // 磁滞
+    #define AS5600_HYST_OFF 0
+    #define AS5600_HYST_LSB1 1
+    #define AS5600_HYST_LSB2 2
+    #define AS5600_HYST_LSB3 3
 
-// 磁滞
-#define AS5600_HYST_OFF 0
-#define AS5600_HYST_LSB1 1
-#define AS5600_HYST_LSB2 2
-#define AS5600_HYST_LSB3 3
+    // 慢速滤波器
+    #define AS5600_SLOW_FILT_16X 0
+    #define AS5600_SLOW_FILT_8X 1
+    #define AS5600_SLOW_FILT_4X 2
+    #define AS5600_SLOW_FILT_2X 3
 
-// 慢速滤波器
-#define AS5600_SLOW_FILT_16X 0
-#define AS5600_SLOW_FILT_8X 1
-#define AS5600_SLOW_FILT_4X 2
-#define AS5600_SLOW_FILT_2X 3
+    // 快速滤波器
+    #define AS5600_FAST_FILT_NONE 0
+    #define AS5600_FAST_FILT_LSB6 1
+    #define AS5600_FAST_FILT_LSB7 2
+    #define AS5600_FAST_FILT_LSB9 3
+    #define AS5600_FAST_FILT_LSB18 4
+    #define AS5600_FAST_FILT_LSB21 5
+    #define AS5600_FAST_FILT_LSB24 6
+    #define AS5600_FAST_FILT_LSB10 7
 
-// 快速滤波器
-#define AS5600_FAST_FILT_NONE 0
-#define AS5600_FAST_FILT_LSB6 1
-#define AS5600_FAST_FILT_LSB7 2
-#define AS5600_FAST_FILT_LSB9 3
-#define AS5600_FAST_FILT_LSB18 4
-#define AS5600_FAST_FILT_LSB21 5
-#define AS5600_FAST_FILT_LSB24 6
-#define AS5600_FAST_FILT_LSB10 7
+    // 看门狗
+    #define AS5600_WATCHDOG_OFF 0
+    #define AS5600_WATCHDOG_ON 1
 
-// 看门狗
-#define AS5600_WATCHDOG_OFF 0
-#define AS5600_WATCHDOG_ON 1
+    // ==================== 寄存器地址 ====================
+    // 配置寄存器
+    #define AS5600_REG_ZMCO 0x00
+    #define AS5600_REG_ZPOS 0x01 // +0x02
+    #define AS5600_REG_MPOS 0x03 // +0x04
+    #define AS5600_REG_MANG 0x05 // +0x06
+    #define AS5600_REG_CONF 0x07 // +0x08
 
-// ==================== 寄存器地址 ====================
-// 配置寄存器
-#define AS5600_REG_ZMCO 0x00
-#define AS5600_REG_ZPOS 0x01 // +0x02
-#define AS5600_REG_MPOS 0x03 // +0x04
-#define AS5600_REG_MANG 0x05 // +0x06
-#define AS5600_REG_CONF 0x07 // +0x08
+    // 输出寄存器
+    #define AS5600_REG_RAW_ANGLE 0x0C // +0x0D
+    #define AS5600_REG_ANGLE 0x0E     // +0x0F
 
-// 输出寄存器
-#define AS5600_REG_RAW_ANGLE 0x0C // +0x0D
-#define AS5600_REG_ANGLE 0x0E     // +0x0F
+    // I2C地址寄存器 (AS5600L)
+    #define AS5600_REG_I2CADDR 0x20
+    #define AS5600_REG_I2CUPDT 0x21
 
-// I2C地址寄存器 (AS5600L)
-#define AS5600_REG_I2CADDR 0x20
-#define AS5600_REG_I2CUPDT 0x21
+    // 状态寄存器
+    #define AS5600_REG_STATUS 0x0B
+    #define AS5600_REG_AGC 0x1A
+    #define AS5600_REG_MAGNITUDE 0x1B // +0x1C
+    #define AS5600_REG_BURN 0xFF
 
-// 状态寄存器
-#define AS5600_REG_STATUS 0x0B
-#define AS5600_REG_AGC 0x1A
-#define AS5600_REG_MAGNITUDE 0x1B // +0x1C
-#define AS5600_REG_BURN 0xFF
+    // 状态位
+    #define AS5600_MAGNET_HIGH 0x08
+    #define AS5600_MAGNET_LOW 0x10
+    #define AS5600_MAGNET_DETECT 0x20
 
-// 状态位
-#define AS5600_MAGNET_HIGH 0x08
-#define AS5600_MAGNET_LOW 0x10
-#define AS5600_MAGNET_DETECT 0x20
-
-// 配置位掩码
-#define AS5600_CONF_POWER_MODE 0x03
-#define AS5600_CONF_HYSTERESIS 0x0C
-#define AS5600_CONF_OUTPUT_MODE 0x30
-#define AS5600_CONF_PWM_FREQUENCY 0xC0
-#define AS5600_CONF_SLOW_FILTER 0x03
-#define AS5600_CONF_FAST_FILTER 0x1C
-#define AS5600_CONF_WATCH_DOG 0x20
+    // 配置位掩码
+    #define AS5600_CONF_POWER_MODE 0x03
+    #define AS5600_CONF_HYSTERESIS 0x0C
+    #define AS5600_CONF_OUTPUT_MODE 0x30
+    #define AS5600_CONF_PWM_FREQUENCY 0xC0
+    #define AS5600_CONF_SLOW_FILTER 0x03
+    #define AS5600_CONF_FAST_FILTER 0x1C
+    #define AS5600_CONF_WATCH_DOG 0x20
 
 // ==================== AS5600 结构体 ====================
 typedef struct

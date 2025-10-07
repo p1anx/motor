@@ -44,11 +44,11 @@ float PIDController_update(PIDController *pid, float error)
     output = _constrain(output, -pid->limit, pid->limit);
 
     // limit the acceleration by ramping the output
-    float output_rate = (output - pid->output_prev) / Ts;
-    if (output_rate > pid->output_ramp)
-        output = pid->output_prev + pid->output_ramp * Ts;
-    else if (output_rate < -pid->output_ramp)
-        output = pid->output_prev - pid->output_ramp * Ts;
+    // float output_rate = (output - pid->output_prev) / Ts;
+    // if (output_rate > pid->output_ramp)
+    //     output = pid->output_prev + pid->output_ramp * Ts;
+    // else if (output_rate < -pid->output_ramp)
+    //     output = pid->output_prev - pid->output_ramp * Ts;
 
     // saving for the next pass
     pid->integral_prev = integral;

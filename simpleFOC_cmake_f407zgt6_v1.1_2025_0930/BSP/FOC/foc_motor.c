@@ -1,5 +1,7 @@
 #include "foc_motor.h"
 #include "encoder.h"
+#include "motor_config.h"
+#include "stm32_hal.h"
 
 void FOCMotor_init(FOCMotor_t *motor)
 {
@@ -47,9 +49,12 @@ void FOCMotor_init(FOCMotor_t *motor)
     //
     // // Initialize low pass filter with default values
     LowPassFilter_init(&motor->LPF_velocity, DEF_VEL_FILTER_Tf);
+    LowPassFilter_init(&motor->LPF_current_d, DEF_CURRENT_FILTER_Tf);
+    LowPassFilter_init(&motor->LPF_current_q, DEF_CURRENT_FILTER_Tf);
 
     // sensor
     // motor->sensor = NULL;
+    PRINT_OK("FOCMotor init");
 }
 
 void FOCMotor_linkSensor(FOCMotor_t *motor, Sensor_t *_sensor)
@@ -91,6 +96,17 @@ float FOCMotor_shaftVelocity(FOCMotor_t *motor)
     // return LowPassFilter(&motor->LPF_velocity,
     //                      Encoder_getVelocity(motor->sensor));
     return Encoder_getVelocity(motor->encoder);
+}
+float FOCMotor_shaftVelocityRPM(FOCMotor_t *motor)
+{
+    if (!motor)
+        return 0;
+    // if no sensor linked return 0
+    if (!motor->encoder)
+        return 0;
+    // return LowPassFilter(&motor->LPF_velocity,
+    //                      Encoder_getVelocity(motor->sensor));
+    return Encoder_getVelocityRPM(motor->encoder);
 }
 
 void FOCMotor_linkAS5600(FOCMotor_t *focmotor, AS5600_t *as5600)

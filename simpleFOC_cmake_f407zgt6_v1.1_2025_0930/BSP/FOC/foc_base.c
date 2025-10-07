@@ -340,3 +340,24 @@ void Park_Transform(float I_alpha, float I_beta, float theta, float *Id, float *
     *Id = I_alpha * cos_theta + I_beta * sin_theta;
     *Iq = -I_alpha * sin_theta + I_beta * cos_theta;
 }
+void Debug_Transformations(void)
+{
+    printf("=== Coordinate Transform Check ===\n");
+
+    // 测试：给定已知三相电流
+    float Ia = 1.0f, Ib = -0.5f, Ic = -0.5f, i_alpha, i_beta, i_d, i_q;
+
+    // Clarke变换
+    Clarke_Transform(Ia, Ib, &i_alpha, &i_beta);
+    printf("Clarke: alpha=%.3f, beta=%.3f\n", i_alpha, i_beta);
+
+    // Park变换（angle=0时，d=alpha, q=beta）
+    Park_Transform(i_alpha, i_beta, 0, &i_d, &i_q);
+    printf("Park (angle=0): d=%.3f, q=%.3f\n", i_d, i_q);
+
+    // 验证：angle=0时，d应该≈alpha, q应该≈-beta或beta
+    if (fabsf(i_d - i_alpha) > 0.1f)
+    {
+        printf("⚠️  Park transform may be wrong!\n");
+    }
+}

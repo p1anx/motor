@@ -14,7 +14,10 @@ typedef enum
     ControlType_velocity, //!< Velocity motion control
     ControlType_angle,    //!< Position/angle motion control
     ControlType_velocity_openloop,
-    ControlType_angle_openloop
+    ControlType_angle_openloop,
+    ControlType_velocityClosedLoop, //!< Velocity motion control
+    ControlType_angleClosedLoop,    //!< angle motion control
+    ControlType_currentClosedLoop,  //!< angle motion control
 } ControlType_t;
 
 /**
@@ -97,11 +100,15 @@ struct FOCMotor_t
     FOCModulationType_t foc_modulation; //!< parameter determining modulation algorithm
     PIDController PID_velocity;         //!< parameter determining the velocity PI configuration
     PIDController PID_current;          //!< parameter determining the velocity PI configuration
+    PIDController *PID_velocityLoop;    //!< parameter determining the velocity PI configuration
     PIDController *PID_current_d;       //!< parameter determining the velocity PI configuration
     PIDController *PID_current_q;       //!< parameter determining the velocity PI configuration
     PIDController P_angle;              //!< parameter determining the
     // position P configuration
-    LowPassFilter_t LPF_velocity; //!< parameter
+    LowPassFilter_t LPF_velocity;  //!< parameter
+    LowPassFilter_t LPF_current_d; //!< parameter
+    LowPassFilter_t LPF_current_q; //!< parameter
+    // LowPassFilter_t LPF_velocity;  //!< parameter
     // determining the velocity Low pass filter configuration
 
     /**
@@ -117,7 +124,7 @@ struct FOCMotor_t
 void FOCMotor_init(FOCMotor_t *motor);
 
 float FOCMotor_shaftVelocity(FOCMotor_t *motor);
-
+float FOCMotor_shaftVelocityRPM(FOCMotor_t *motor);
 float FOCMotor_shaftAngle(FOCMotor_t *motor);
 
 void FOCMotor_linkSensor(FOCMotor_t *motor, Sensor_t *_sensor);

@@ -92,6 +92,7 @@ extern "C"
      * @return Current angular velocity in rad/s
      */
     float Encoder_getVelocity(Encoder_t *encoder);
+    float Encoder_getVelocityRPM(Encoder_t *enc);
 
     /**
      * Set current angle as zero angle

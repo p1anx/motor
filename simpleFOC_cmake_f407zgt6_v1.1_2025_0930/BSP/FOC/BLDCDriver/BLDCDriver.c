@@ -1,7 +1,17 @@
 #include "BLDCDriver.h"
 #include "motor_config.h"
-#include "stm32f4xx_hal_gpio.h"
+// #include "stm32f4xx_hal_gpio.h"
+#include "pwm.h"
+#include "stm32_hal.h"
 
+void BLDCDriver_init(BLDCDriver_t *driver, int pwm_Hz, int pwm_resolution, float voltage_power_supply, float voltage_limit)
+{
+    driver->pwm_frequency = pwm_Hz;
+    driver->pwm_resolution = pwm_resolution;
+    pwm_init(driver->pwm_frequency, driver->pwm_resolution);
+    BLDCDriver3PWM_init(driver, voltage_power_supply, voltage_limit);
+    PRINT_OK("PWM driver init");
+}
 // enable motor driver
 void BLDCDriver3PWM_enable(BLDCDriver_t *driver)
 {

@@ -30,10 +30,22 @@ float Encoder_getAngle(Encoder_t *enc)
 float Encoder_getVelocity(Encoder_t *enc)
 {
 
-    float speedRPM = AS5600_GetAngularSpeed(enc->as5600, AS5600_MODE_RPM, 1);
+    // 1.
+    // float speedRPM = AS5600_GetAngularSpeed(enc->as5600, AS5600_MODE_RPM, 1);
+    // 2.
+    float speedRPM = AS5600_GetAngularSpeed(&enc->as5600_Instance, AS5600_MODE_RPM, 1);
     return speedRPM;
 }
 
+float Encoder_getVelocityRPM(Encoder_t *enc)
+{
+
+    // 1.
+    // float speedRPM = AS5600_GetAngularSpeed(enc->as5600, AS5600_MODE_RPM, 1);
+    // 2.
+    float speedRPM = AS5600_GetAngularSpeed(&enc->as5600_Instance, AS5600_MODE_RPM, 1);
+    return speedRPM;
+}
 // void Encoder_init(Encoder_t *encoder)
 // {
 //     Encoder_AS5600_Init(encoder->as5600, encoder->as5600->hi2c);

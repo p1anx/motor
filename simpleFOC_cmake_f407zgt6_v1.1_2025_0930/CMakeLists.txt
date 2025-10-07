@@ -75,8 +75,10 @@ target_link_libraries(${CMAKE_PROJECT_NAME}
 target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     # Add user sources here
     BSP/mymain.c
+    BSP/stm32_hal.c
     BSP/test/test.c
     BSP/led/led.c
+    BSP/led/key.c
     BSP/FOC/BLDCDriver/BLDCDriver.c
     BSP/FOC/currentSense/currentSense.c
     BSP/FOC/pid/pid.c
@@ -88,6 +90,7 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     BSP/FOC/encoder/encoder.c
     BSP/FOC/encoder/as5600.c
     BSP/FOC/encoder/encoder_as5600.c
+    BSP/FOC/encoder/hallSensor.c
     BSP/FOC/timer/timer.c
 )
 

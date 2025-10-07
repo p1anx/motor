@@ -36,3 +36,5 @@ ColumnLimit: 200
 #
 # # 排序包含头文件
 SortIncludes: false
+# 预处理器缩进配置
+IndentPPDirectives: BeforeHash  # 可选: None, AfterHash, BeforeHash

@@ -20,6 +20,7 @@
 // align voltage
 #define DEF_VOLTAGE_SENSOR_ALIGN 6.0 //!< default voltage for sensor and motor zero alignemt
 // low pass filter velocity
-#define DEF_VEL_FILTER_Tf 0.005 //!< default velocity filter time constant
+#define DEF_VEL_FILTER_Tf 0.05    //!< default velocity filter time constant
+#define DEF_CURRENT_FILTER_Tf 0.5 //!< default velocity filter time constant
 
 #endif // !__MOTOR_CONFIG_H
