@@ -1,0 +1,12 @@
+CompileFlags:
+  # 指定 compile_commands.json 位置
+  CompilationDatabase: build/default
+  
+  # 手动添加包含路径
+  Add:
+    # ARM GCC 工具链头文件
+    - -I/usr/lib/gcc/arm-none-eabi/13.2.1/include
+    - -I/usr/lib/gcc/arm-none-eabi/13.2.1/include-fixed
+    # - -I/usr/arm-none-eabi/include
+    - -I/usr/include/newlib
+

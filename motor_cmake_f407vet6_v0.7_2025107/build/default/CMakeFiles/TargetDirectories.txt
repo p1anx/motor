@@ -1,0 +1,9 @@
+/home/xwj/0-code/0-github/motor/motor_cmake_f407vet6_v0.7_2025107/build/default/CMakeFiles/motor_cmake_f407vet6_v0.dir
+/home/xwj/0-code/0-github/motor/motor_cmake_f407vet6_v0.7_2025107/build/default/CMakeFiles/flash.dir
+/home/xwj/0-code/0-github/motor/motor_cmake_f407vet6_v0.7_2025107/build/default/CMakeFiles/start_openocd.dir
+/home/xwj/0-code/0-github/motor/motor_cmake_f407vet6_v0.7_2025107/build/default/CMakeFiles/debug.dir
+/home/xwj/0-code/0-github/motor/motor_cmake_f407vet6_v0.7_2025107/build/default/CMakeFiles/edit_cache.dir
+/home/xwj/0-code/0-github/motor/motor_cmake_f407vet6_v0.7_2025107/build/default/CMakeFiles/rebuild_cache.dir
+/home/xwj/0-code/0-github/motor/motor_cmake_f407vet6_v0.7_2025107/build/default/cmake/stm32cubemx/CMakeFiles/STM32_Drivers.dir
+/home/xwj/0-code/0-github/motor/motor_cmake_f407vet6_v0.7_2025107/build/default/cmake/stm32cubemx/CMakeFiles/edit_cache.dir
+/home/xwj/0-code/0-github/motor/motor_cmake_f407vet6_v0.7_2025107/build/default/cmake/stm32cubemx/CMakeFiles/rebuild_cache.dir
