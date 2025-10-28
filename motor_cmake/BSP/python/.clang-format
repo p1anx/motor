@@ -1,0 +1,38 @@
+# 基于哪个预设样式 LLVM Google Microsoft
+BasedOnStyle: Microsoft
+
+# 缩进宽度
+IndentWidth: 4
+#
+# # 使用空格还是制表符
+# UseTab: Never
+#
+# 列宽限制
+ColumnLimit: 100
+#
+# # 大括号换行风格
+# BreakBeforeBraces: Attach
+#
+# # 函数参数对齐方式
+# #AlignParameters: true
+#
+# # 指针和引用的对齐方式
+# PointerAlignment: Left
+#
+# # 访问修饰符的缩进
+# AccessModifierOffset: -2
+#
+# # 是否允许短的if语句放在一行
+# AllowShortIfStatementsOnASingleLine: false
+#
+# # 是否允许短的函数放在一行
+# AllowShortFunctionsOnASingleLine: Empty
+#
+# # 二元操作符前是否换行
+# BreakBeforeBinaryOperators: false
+#
+# # 构造函数初始化列表的风格
+# ConstructorInitializerAllOnOneLineOrOnePerLine: true
+#
+# # 排序包含头文件
+SortIncludes: false

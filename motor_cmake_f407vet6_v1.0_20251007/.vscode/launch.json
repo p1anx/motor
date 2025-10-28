@@ -1,0 +1,25 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "STM32 Debug (OpenOCD)",
+            "cwd": "${workspaceFolder}",
+            "executable": "${workspaceFolder}/build/default/motor_cmake_f407vet6_v0.elf", // option: .elf file
+            "request": "launch",
+            "type": "cortex-debug",
+            "runToEntryPoint": "main",
+            "servertype": "openocd",
+            "configFiles": [
+                "interface/cmsis-dap.cfg", // options: jlink, cmsis-dap
+                "target/stm32f4x.cfg" // options: stm32f1x, stm32f4x
+            ],
+            "showDevDebugOutput": "raw",
+            // "svdFile": "${workspaceFolder}/STM32F407.svd",
+            // "preLaunchTask": "STM32 Build",
+            // "postRestartCommands": [
+            //     "break main",
+            //     "continue"
+            // ]
+        }
+    ]
+}

@@ -1,0 +1,35 @@
+{
+    "cortex-debug.armToolchainPath.linux": "/usr/bin",
+    "cortex-debug.gdbPath.linux": "/usr/local/arm-gnu-toolchain/bin/arm-none-eabi-gdb",
+    "cortex-debug.openocdPath": "/usr/bin/openocd",
+    "clangd.arguments": [
+        "--compile-commands-dir=${workspaceFolder}/build/default", //compile_commands.json filePath
+    ],
+    "files.associations": {
+        "mymain.h": "c",
+        "pid_init.h": "c",
+        "bit_stream.h": "c"
+    },
+    "editor.cursorBlinking": "solid",
+    // 禁用光标平滑移动
+    "editor.cursorSmoothCaretAnimation": "off",
+    // 减少光标动画
+    "editor.cursorBlinking": "solid",
+    // 禁用不必要的功能
+    "editor.minimap.enabled": false,
+    "editor.suggest.preview": false,
+    "editor.lightbulb.enabled": "off",
+    // 减少语法高亮延迟
+    "editor.semanticHighlighting.enabled": false,
+    // 禁用括号匹配高亮
+    "editor.matchBrackets": "never",
+    // 减少文件监控
+    "files.watcherExclude": {
+        "**/.git/objects/**": true,
+        "**/.git/subtree-cache/**": true,
+        "**/node_modules/**": true,
+        "**/build/**": true,
+        "**/.vscode/**": true
+    },
+    "cortex-debug.armToolchainPath": "/opt/st/stm32cubeclt_1.19.0/GNU-tools-for-STM32/bin",
+}
