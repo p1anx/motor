@@ -1,28 +1,34 @@
 # 正点原子F407ZGT6
 
-# cmake 
+# cmake
+
 ## for stm32 cmake project
-1. in `CMakePresets.json` 
-rewrite '"hidden": true' to `"hidden":false` 
+
+1. in `CMakePresets.json`
+rewrite '"hidden": true' to `"hidden":false`
 2. generate cmake project
+
 ```bash
 cmake --preset=default
 ```
 
 3. build
+
 ```bash
 cmake -B build/default
 ```
 
 4. flash
+
 ```bash
 cmake -B build/default flash
 ```
 
-
 # as5600
+
 ## 实现不显式初始化AS5600就能使用
-```c 
+
+```c
 // encoder.h
 typedef struct {
     AS5600_t as5600_instance;  // 内嵌AS5600实例
