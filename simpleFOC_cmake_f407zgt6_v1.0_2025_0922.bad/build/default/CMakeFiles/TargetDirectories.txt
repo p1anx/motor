@@ -1,9 +1,0 @@
-/home/xwj/0-code/0-github/motor/simpleFOC_cmake_f407zgt6_v1.0_2025_0922/build/default/CMakeFiles/f407zgt6_cmake.dir
-/home/xwj/0-code/0-github/motor/simpleFOC_cmake_f407zgt6_v1.0_2025_0922/build/default/CMakeFiles/flash.dir
-/home/xwj/0-code/0-github/motor/simpleFOC_cmake_f407zgt6_v1.0_2025_0922/build/default/CMakeFiles/start_openocd.dir
-/home/xwj/0-code/0-github/motor/simpleFOC_cmake_f407zgt6_v1.0_2025_0922/build/default/CMakeFiles/debug.dir
-/home/xwj/0-code/0-github/motor/simpleFOC_cmake_f407zgt6_v1.0_2025_0922/build/default/CMakeFiles/edit_cache.dir
-/home/xwj/0-code/0-github/motor/simpleFOC_cmake_f407zgt6_v1.0_2025_0922/build/default/CMakeFiles/rebuild_cache.dir
-/home/xwj/0-code/0-github/motor/simpleFOC_cmake_f407zgt6_v1.0_2025_0922/build/default/cmake/stm32cubemx/CMakeFiles/STM32_Drivers.dir
-/home/xwj/0-code/0-github/motor/simpleFOC_cmake_f407zgt6_v1.0_2025_0922/build/default/cmake/stm32cubemx/CMakeFiles/edit_cache.dir
-/home/xwj/0-code/0-github/motor/simpleFOC_cmake_f407zgt6_v1.0_2025_0922/build/default/cmake/stm32cubemx/CMakeFiles/rebuild_cache.dir
