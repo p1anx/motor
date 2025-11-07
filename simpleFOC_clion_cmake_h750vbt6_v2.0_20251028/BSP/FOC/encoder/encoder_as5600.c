@@ -1,4 +1,6 @@
 #include "encoder_as5600.h"
+
+#include "pid.h"
 #include "stm32_hal.h"
 #include <stdbool.h>
 #include <stdio.h>
@@ -535,7 +537,7 @@ static uint32_t getMicros(void)
     return HAL_GetTick() * 1000 + (SysTick->LOAD - SysTick->VAL) / (SystemCoreClock / 1000000);
 }
 
-float AS5600_GetAngularSpeed(AS5600_t *sensor, uint8_t mode, bool update)
+float AS5600_GetAngularSpeed_v1(AS5600_t *sensor, uint8_t mode, bool update)
 {
     if (!sensor)
         return 0;
@@ -564,6 +566,50 @@ float AS5600_GetAngularSpeed(AS5600_t *sensor, uint8_t mode, bool update)
 
     // 记住最后的时间和角度
     sensor->lastMeasurement = now;
+    sensor->lastAngle = angle;
+
+    // 返回弧度、RPM或度数
+    if (mode == AS5600_MODE_RADIANS)
+    {
+        return speed * AS5600_RAW_TO_RADIANS;
+    }
+    if (mode == AS5600_MODE_RPM)
+    {
+        return speed * AS5600_RAW_TO_RPM;
+    }
+    // 默认返回度数
+    return speed * AS5600_RAW_TO_DEGREES;
+}
+float AS5600_GetAngularSpeed(AS5600_t *sensor, uint8_t mode, bool update)
+{
+    if (!sensor)
+        return 0;
+
+    if (update)
+    {
+        sensor->lastReadAngle = AS5600_ReadAngle(sensor);
+        if (sensor->error != AS5600_OK)
+        {
+            return 0; // 或者返回 NAN
+        }
+    }
+
+    // uint32_t now = getMicros();
+    int angle = sensor->lastReadAngle;
+    uint32_t deltaT = PID_UPDATE_T;
+    int deltaA = angle - sensor->lastAngle;
+
+    // 假设两次测量之间旋转不超过180度
+    if (deltaA > 2048)
+        deltaA -= 4096;
+    else if (deltaA < -2048)
+        deltaA += 4096;
+
+    float speed = (deltaA * 1000.0f) / deltaT;
+    // printf("deltaT = %d\n", deltaT);
+
+    // 记住最后的时间和角度
+    // sensor->lastMeasurement = now;
     sensor->lastAngle = angle;
 
     // 返回弧度、RPM或度数

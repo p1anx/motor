@@ -9,6 +9,7 @@
 #include "stm32_hal.h"
 #include <stdio.h>
 #include "pwm.h"
+#include "currentSense.h"
 
 int BLDCMotor_enable(BLDCMotor_t *motor)
 {
@@ -265,7 +266,7 @@ void BLDCMotor_setPhaseVoltage(BLDCMotor_t *motor, float Uq, float Ud, float ang
     // {
     //     motor->driver->functions->setPwm(motor->driver, motor->Ua, motor->Ub, motor->Uc);
     // }
-    // printf("ua = %f, ub = %f, uc = %f\n", motor->Ua, motor->Ub, motor->Uc);
+    // printf("set v = %f,%f,%f\n", motor->Ua, motor->Ub, motor->Uc);
     BLDCDriver6PWM_setPwm(motor->driver, motor->Ua, motor->Ub, motor->Uc);
 }
 void BLDCMotor_setPhaseVoltage_v0(BLDCMotor_t *motor, float Uq, float Ud, float angle_el)
@@ -504,6 +505,7 @@ void BLDCMotor_init(BLDCMotor_t *motor, int pp)
     // Initialize open loop timestamp
     motor->open_loop_timestamp = 0;
     motor->angle = 0;
+    motor->lastAngle = 0;
     PRINT_OK("BLDCMotor init");
 }
 
@@ -544,6 +546,80 @@ float BLDCMotor_getVelocity(BLDCMotor_t *motor)
     return FOCMotor_shaftVelocity(&motor->foc_motor);
     // return AS5600_getVelocity(motor->as5600);
 }
+
+float AS5600_GetAngularSpeed_v0(AS5600_t *sensor, uint8_t mode, bool update)
+{
+    if (!sensor)
+        return 0;
+
+    if (update)
+    {
+        sensor->lastReadAngle = AS5600_ReadAngle(sensor);
+        if (sensor->error != AS5600_OK)
+        {
+            return 0; // 或者返回 NAN
+        }
+    }
+
+    uint32_t now = getMicros();
+    int angle = sensor->lastReadAngle;
+    uint32_t deltaT = now - sensor->lastMeasurement;
+    int deltaA = angle - sensor->lastAngle;
+
+    // 假设两次测量之间旋转不超过180度
+    if (deltaA > 2048)
+        deltaA -= 4096;
+    else if (deltaA < -2048)
+        deltaA += 4096;
+
+    float speed = (deltaA * 1000000.0f) / deltaT;
+
+    // 记住最后的时间和角度
+    sensor->lastMeasurement = now;
+    sensor->lastAngle = angle;
+
+    // 返回弧度、RPM或度数
+    if (mode == AS5600_MODE_RADIANS)
+    {
+        return speed * AS5600_RAW_TO_RADIANS;
+    }
+    if (mode == AS5600_MODE_RPM)
+    {
+        return speed * AS5600_RAW_TO_RPM;
+    }
+    // 默认返回度数
+    return speed * AS5600_RAW_TO_DEGREES;
+}
+
+float BLDCMotor_getVelocityRPM_v1(BLDCMotor_t *motor)
+{
+    int angle = AS5600_ReadAngle(motor->as5600);
+    // if (motor->as5600->error != AS5600_OK)
+    // {
+    //     printf("[ERROR] AS5600 get speed\n");
+    //     return 0; // 或者返回 NAN
+    // }
+
+    uint32_t deltaT = motor->pid_dt;
+    int deltaA = angle - motor->as5600->lastReadAngle;
+
+    // 假设两次测量之间旋转不超过180度
+    if (deltaA > 2048)
+        deltaA -= 4096;
+    else if (deltaA < -2048)
+        deltaA += 4096;
+
+    float speed = (deltaA) / (deltaT * 1e-3);
+
+    // 记住最后的时间和角度
+    motor->as5600->lastReadAngle = angle;
+
+    // 返回弧度、RPM或度数
+    {
+        return speed * AS5600_RAW_TO_RPM;
+    }
+    // 默认返回度数
+}
 float BLDCMotor_getVelocityRPM(BLDCMotor_t *motor)
 {
     // return FOCMotor_shaftVelocity(motor->FOCMotor);
@@ -573,11 +649,11 @@ float BLDCMotor_getCurrentDQ(BLDCMotor_t *motor)
     // i_a = motor->currentSense->i3[0];
     // i_b = motor->currentSense->i3[1];
     // 2.
-    // CurrentSense_read3Current(motor->currentSense);
-    // i_a = -motor->currentSense->i_a;
-    // i_b = -motor->currentSense->i_b;
-    i_a = 0;
-    i_b = 0;
+    CurrentSense_read3Current(motor->currentSense);
+    i_a = -motor->currentSense->i_a;
+    i_b = -motor->currentSense->i_b;
+    // i_a = 0;
+    // i_b = 0;
     Clarke_Transform(i_a, i_b, &i_alpha, &i_beta);
     Park_Transform(i_alpha, i_beta, motor->e_angle, &i_d, &i_q);
     motor->foc_motor.i_d = i_d;
@@ -696,7 +772,9 @@ void BLDCMotor_move(BLDCMotor_t *motor, float new_target)
         break;
     case ControlType_velocity_openloop:
         // printf("open\n");
-        BLDCMotor_velocityOpenloop(motor, new_target);
+        // BLDCMotor_velocityOpenloop(motor, new_target);
+        BLDCMotor_velocityOpenloop_with_timer(motor, new_target);
+
         break;
     case ControlType_angle_openloop:
         // angle control in open loop
@@ -717,6 +795,20 @@ void BLDCMotor_move(BLDCMotor_t *motor, float new_target)
     }
 }
 
+void BLDCMotor_velocityOpenloop_with_timer(BLDCMotor_t *motor, float target_velocity)
+{
+    if (!motor)
+        return;
+
+    float Ts = motor->pid_dt * 1e-3f;
+    float angle = _normalizeAngle(motor->angle + target_velocity * Ts);
+    motor->angle = angle;
+    motor->velocity = (motor->angle - motor->lastAngle)/Ts;
+    motor->lastAngle = angle;
+    float e_angle = _electricalAngle(angle, motor->foc_motor.pole_pairs);
+    motor->e_angle = e_angle;
+    BLDCMotor_setPhaseVoltage(motor, motor->foc_motor.voltage_limit, 0, e_angle);
+}
 void BLDCMotor_velocityOpenloop(BLDCMotor_t *motor, float target_velocity)
 {
     if (!motor)
@@ -758,12 +850,14 @@ void BLDCMotor_velocityOpenloop(BLDCMotor_t *motor, float target_velocity)
 }
 int BLDCMotor_velocityClosedLoop(BLDCMotor_t *motor, float target)
 {
-    motor->velocity = BLDCMotor_getVelocityRPM(motor);
+    motor->velocity = BLDCMotor_getVelocityRPM(motor)/60;
+    // motor->velocity = BLDCMotor_getVelocityRPM(motor)/60;
     motor->angle = BLDCMotor_getAngle(motor);
     float e_angle = _electricalAngle(motor->angle, motor->foc_motor.pole_pairs);
     motor->e_angle = e_angle;
     motor->foc_motor.voltage_q = PIDController_update(motor->pid, target - motor->velocity);
-    BLDCMotor_setPhaseVoltage(motor, motor->foc_motor.voltage_q, 0, _normalizeAngle(e_angle));
+    // BLDCMotor_setPhaseVoltage(motor, motor->foc_motor.voltage_q, 0, _normalizeAngle(e_angle));
+    BLDCMotor_setPhaseVoltage(motor, motor->foc_motor.voltage_q, 0,(e_angle));
     // DEBUG_PRINT("e angle = %f", e_angle);
     // DEBUG_PRINT("pp  = %d", motor->foc_motor.pole_pairs);
     return 0;
@@ -838,6 +932,6 @@ int BLDCMotor_currentClosedLoop(BLDCMotor_t *motor, float target)
 }
 void BLDCMotor_run(BLDCMotor_t *motor)
 {
-    BLDCMotor_velocityClosedLoop(motor, motor->target);
-    // BLDCMotor_move(motor, motor->target);
+    // BLDCMotor_velocityClosedLoop(motor, motor->target);
+    BLDCMotor_move(motor, motor->target);
 }

@@ -63,6 +63,9 @@ add_executable(${CMAKE_PROJECT_NAME}
         BSP/FOC/pwm.c
         BSP/test/test_as5600.c
         BSP/test/test_motor.c
+        BSP/FOC/currentSense/currentSense.c
+        BSP/FOC/currentSense/currentSense.h
+        BSP/test/test_adc.c
 )
 
 # Add STM32CubeMX generated sources
@@ -77,6 +80,7 @@ target_link_directories(${CMAKE_PROJECT_NAME} PRIVATE
 target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     # Add user sources here
     BSP/FOC/currentSense/ads1256.c
+    BSP/FOC/timer/timer.c
 )
 
 # Add include paths
@@ -88,6 +92,7 @@ target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
         BSP/FOC/BLDCDriver
         BSP/FOC/encoder
         BSP/FOC/pid
+        BSP/FOC/timer
 )
 
 # Add project symbols (macros)

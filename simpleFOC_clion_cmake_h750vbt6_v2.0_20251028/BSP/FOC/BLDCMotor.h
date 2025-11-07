@@ -37,6 +37,8 @@ typedef struct
     bool isEnable;
     AS5600_t *as5600;
     CurrentSense_t *currentSense;
+    int pid_dt;
+    float lastAngle;
 
 } BLDCMotor_t;
 float BLDCMotor_getAngle(BLDCMotor_t *motor);
@@ -61,4 +63,5 @@ int BLDCMotor_currentClosedLoop(BLDCMotor_t *motor, float target);
 
 float BLDCMotor_getCurrentDQ(BLDCMotor_t *motor);
 int BLDCMotor_velocityClosedLoop_without_i(BLDCMotor_t *motor, float target);
+void BLDCMotor_velocityOpenloop_with_timer(BLDCMotor_t *motor, float target_velocity);
 #endif // !__BLDCMOTOR_H
