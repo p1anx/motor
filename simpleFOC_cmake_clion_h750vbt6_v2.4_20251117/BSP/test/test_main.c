@@ -1573,19 +1573,19 @@ void test_motor_pid_currentVelocityAngleLoopBandwidth(void)
     pid_iq.D = 0.0f;
 
     PIDController pid_velocity;
-    pid_velocity.P = 0.002f;
-    pid_velocity.I = 0.0005f;//0.05
+    pid_velocity.P = 0.4f;
+    pid_velocity.I = 0.1f;//0.05
     pid_velocity.D = 0.0f;
     PIDController pid_degree;
-    pid_degree.P = 60.0f;
-    pid_degree.I = 10.000f;
+    pid_degree.P = 2.0f;
+    pid_degree.I = 0.0f;
     pid_degree.D = 0.0f;
     BLDCMotor_initPID_CurrentVelocityAngle(&motor, 7, EncoderType_MT6835, ControlType_currentVelocityAngleClosedLoopBandwidth, pid_id, pid_iq, pid_velocity, pid_degree);
 
     delay_ms(1000);
     printf("waiting to start motor....\n");
     BLDCMotor_disable(&motor);
-    motor.target = 90.0f;
+    motor.target = _2PI/2;
     while (1)
     {
         BLDCMotor_ControlRunByKey(&motor);

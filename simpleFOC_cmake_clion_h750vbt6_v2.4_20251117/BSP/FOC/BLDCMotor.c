@@ -2044,9 +2044,10 @@ int BLDCMotor_currentVelocityAngleClosedLoopBandwith(BLDCMotor_t *motor, float t
 
         static float target_iq = 0;
         static float target_velocity = 0;
-        float velocity = BLDCMotor_getVelocity(motor)*360;
+        float velocity = BLDCMotor_getVelocity(motor)*_2PI;
         motor->angle = motor->foc_motor.Encoder.angle;
-        float degrees = motor->angle * 180 / _PI;
+        // float degrees = motor->angle * 180 / _PI;
+        float degrees = motor->angle;
         // float degrees = motor->angle / _2PI;
 
         float e_angle = _electricalAngle_calibrated(motor->direction, motor->angle, motor->foc_motor.pole_pairs, motor->foc_motor.zero_electric_angle);
@@ -2055,12 +2056,12 @@ int BLDCMotor_currentVelocityAngleClosedLoopBandwith(BLDCMotor_t *motor, float t
 
         if (velocityLoop_counter++ % velocityLoop_period == 0)
         {
-            const int angleLoop_period = 2;
-            if (angleLoop_counter++ % angleLoop_period == 0)
-            {
+            const int angleLoop_period = 1;
+            // if (angleLoop_counter++ % angleLoop_period == 0)
+            // {
                 motor->degree = LowPassFilter(&motor->lpf_degree, degrees);
                 target_velocity = PIDController_update(&motor->PID_degree, target - motor->degree);
-            }
+            // }
             motor->velocity = LowPassFilter(&motor->lpf_velocity, velocity);
             target_iq = PIDController_update(&motor->PID_velocity, target_velocity - motor->velocity);
         }
