@@ -1,1 +1,0 @@
-CMakeLists.txt not found in /home/xwj/3-data/0-code/0-github/motor/simpleFOC_clion_cmake_f407zgt6_v2.1_20251109 Select CMakeLists.txt
