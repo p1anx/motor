@@ -8,4 +8,5 @@ extern TIM_HandleTypeDef htim1;
 // void pwm_init(void);
 void pwm_init(int frequency, int resolution);
 int PWM6_Init(int frequency, int resolution); //6 pwm
+int PWM3_Init(int frequency, int resolution);
 #endif // !__PWM_H

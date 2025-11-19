@@ -14,6 +14,7 @@ void BLDCDriver_init(BLDCDriver_t *driver, int pwm_Hz, int pwm_resolution, float
     driver->pwm_resolution = pwm_resolution;
     PWM6_Init(driver->pwm_frequency, driver->pwm_resolution);
     // BLDCDriver3PWM_init(driver, voltage_power_supply, voltage_limit);
+
     BLDCDriver6PWM_init(driver, voltage_power_supply, voltage_limit);
     // BLDCDriverPWM_enable(driver);
 

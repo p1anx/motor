@@ -1604,8 +1604,11 @@ void test_motor_pid_currentVelocityAngleLoopBandwidth(void)
 
 extern void test_uart(void);
 extern void test_adc_inject(void);
+
+extern void test_3pwm(void);
 void test_main(void)
 {
+    test_3pwm();
     // test_key();
     // test_PWM(1000, 1000);
     // test_adc_inject();
@@ -1660,5 +1663,5 @@ void test_main(void)
     // test_motor_pid_currentVelocityLoopBandwidth();
     // test_motor_pid_currentVelocityRPMLoopBandwidth();
     //19.
-    test_motor_pid_currentVelocityAngleLoopBandwidth();
+    // test_motor_pid_currentVelocityAngleLoopBandwidth();
 }

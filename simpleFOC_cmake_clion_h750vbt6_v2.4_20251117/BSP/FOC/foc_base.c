@@ -4,6 +4,7 @@
 #include "math.h"
 #include "pwm.h"
 #include "mymain.h"
+#include <stdio.h>
 
 #define PP 7
 int pwmA, pwmB, pwmC;

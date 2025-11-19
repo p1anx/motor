@@ -65,7 +65,7 @@ int test_PWM(int frequency, int resolution)
     __HAL_TIM_SET_AUTORELOAD(&pwm_tim, resolution - 1);
     __HAL_TIM_SET_COMPARE(&pwm_tim, TIM_CHANNEL_1, resolution *0.4);
     __HAL_TIM_SET_COMPARE(&pwm_tim, TIM_CHANNEL_2, resolution *0.2);
-    __HAL_TIM_SET_COMPARE(&pwm_tim, TIM_CHANNEL_3, resolution *0.5);
+    __HAL_TIM_SET_COMPARE(&pwm_tim, TIM_CHANNEL_3, resolution *0.1);
 
     HAL_TIM_PWM_Start(&pwm_tim, TIM_CHANNEL_4);
     __HAL_TIM_SET_COMPARE(&pwm_tim, TIM_CHANNEL_4, 1);

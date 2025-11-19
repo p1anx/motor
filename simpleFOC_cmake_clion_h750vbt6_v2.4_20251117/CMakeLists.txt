@@ -79,6 +79,9 @@ add_executable(${CMAKE_PROJECT_NAME}
         BSP/FOC/LoopController.c
         BSP/FOC/LoopController.h
         BSP/test/test_uart.c
+        BSP/FOC/BLDCDriver/BLDCDriver_3PWM.c
+        BSP/FOC/BLDCDriver/BLDCDriver_3PWM.h
+        BSP/test/test_3pwm.c
 
 )
 # Add STM32CubeMX generated sources
