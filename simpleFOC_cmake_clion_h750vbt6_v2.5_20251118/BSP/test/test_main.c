@@ -2126,57 +2126,6 @@ void test_main(void)
     // test_PWM(1000, 1000);
     // test_adc_inject();
     // test_uart();
-    // test_main_pwm();
-    // test_main_adc1();
-    // test_main_adc2();
-    // 1.0ok
-    // test_main_adc3_current();
-    // 1.
-    // test_main_motor_velocityLoop();
-    // 2.as5600
-    // as5600_example_0();
-    // test_main_adc();
-    // 3.
-    // test_main_openloop_with_current();
-    // 4. ok
-    // test_main_motor_velocityLoop();
-    // 5.
-    // test_main_as5600();
-    // test_main_encoder();
-    // 6.
-    // test_electrical_angle();
-    // 7.
-    // test_main_motor_velocityLoop_with_current();
-    // 8.
-    // test_main_currentLoop();
-    // 9.
-    // test_mt6835();
-    // test_encoder();
-    // 10
-    // test_motor_encoder();
-    // test_motor_driver();
-    // 11. ok
-    // test_motor_pid_velocity_ok();
-    // 12. ok
-    // test_motor_pid_currentloop();
-    // 13
-    // test_motor_pwm();
-    // 14.ok
-    // test_motor_pid_currentVelocityLoop();
-    // 15.
-    // test_motor_pid_currentVelocityAngleLoop();
-    // test_motor_pid_VelocityAngleLoop();
-    //16.
-    // test_motor_pid_currentloop_bandwidth();
-
-    //17.ok -- test currentLoop
-    // test_motor_pid_currentloopBandwidth();
-    // test_motor_pid_openLoopBandwidth();
-    //18.ok -- test velocityLoop
-    // test_motor_pid_currentVelocityLoopBandwidth();
-    // test_motor_pid_currentVelocityRPMLoopBandwidth();
-    //19.
-    // test_motor_pid_currentVelocityAngleLoopBandwidth();
     //======================================================
 
     // test_motor_new_driver();
