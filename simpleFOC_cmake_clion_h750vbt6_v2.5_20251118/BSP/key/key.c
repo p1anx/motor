@@ -1,5 +1,7 @@
 
 #include "key.h"
+
+#include <stdio.h>
 uint8_t Key_Scan(int key_num)
 {
     switch (key_num)
@@ -38,9 +40,20 @@ uint8_t Key_Scan(int key_num)
     else
         return KEY_OFF;
 }*/
+volatile int g_keyFlag = 0;
+void KEY_Switch(void) {
+    if (g_keyFlag == 0) {
+        g_keyFlag = 1;
+    }
+    else if (g_keyFlag == 1) {
+        g_keyFlag = 0;
+    }
+
+}
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
-    /*if (GPIO_Pin == GPIO_PIN_4)
+    if (GPIO_Pin == KEY0_GPIO_Pin)
     {
-    }*/
+        KEY_Switch();
+    }
 }

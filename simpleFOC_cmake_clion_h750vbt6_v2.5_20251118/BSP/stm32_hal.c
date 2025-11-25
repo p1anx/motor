@@ -15,10 +15,78 @@ uint32_t getMicros(void)
     // STM32实现示例
     return HAL_GetTick() * 1000 + (SysTick->LOAD - SysTick->VAL) / (SystemCoreClock / 1000000);
 }
+// uint32_t getUs(void)
+// {
+//     // STM32实现示例
+//     return HAL_GetTick() * 1000 + (SysTick->LOAD - SysTick->VAL) / (SystemCoreClock / 1000000);
+// }
 uint32_t getUs(void)
 {
-    // STM32实现示例
-    return HAL_GetTick() * 1000 + (SysTick->LOAD - SysTick->VAL) / (SystemCoreClock / 1000000);
+    return HAL_GetTickUs();
+}
+
+// 2. 获取微秒级时间戳 (类似 HAL_GetTick)
+uint32_t HAL_GetTickUs(void)
+{
+    // 直接读取寄存器比调用 HAL_TIM_ReadCapturedValue 更快
+    return __HAL_TIM_GET_COUNTER(&us_htim);
+}
+// 需要引用 HAL 库全局变量 uwTick
+// 或者使用 HAL_GetTick()
+
+// void UART_DMASendVOFA_justFloat(float floatData) {
+//     static uint8_t vofa_justFloat[8] = {0, 0, 0, 0, 0, 0, 0x80, 0x7F};
+//     memcpy(vofa_justFloat, &vofa_justFloat, sizeof(vofa_justFloat));
+//
+// }
+
+void UART_DMASendVOFA_justFloat4(float dataFloat1, float dataFloat2, float dataFloat3, float dataFloat4) {
+    // void UART_DMASend2(float dataFloat1, float dataFloat2) {
+    uint8_t justFloat_tail[4] = {0, 0, 0x80, 0x7f};
+    uint8_t buffer[256];
+    const int dataFloat_num = 4;
+    float dataFloat_list[4] = {dataFloat1, dataFloat2, dataFloat3, dataFloat4};
+    int data_n = sizeof(dataFloat1) * dataFloat_num + sizeof(justFloat_tail);
+    for (int i = 0; i < dataFloat_num; i++) {
+        memcpy(buffer + i*sizeof(dataFloat1), &dataFloat_list[i], sizeof(dataFloat1));
+    }
+    memcpy(buffer + dataFloat_num*sizeof(dataFloat1) , &justFloat_tail, sizeof(justFloat_tail));
+    memcpy(txDMA_buffer, buffer, sizeof(buffer));
+    if (TxCompleteFlag == 1) {
+        TxCompleteFlag = 0;
+        HAL_UART_Transmit_DMA(&print_uart, (uint8_t*)txDMA_buffer, data_n);
+    }
+}
+void UART_DMASendVOFA_justFloat2(float dataFloat1, float dataFloat2) {
+// void UART_DMASend2(float dataFloat1, float dataFloat2) {
+    uint8_t justFloat_tail[4] = {0, 0, 0x80, 0x7f};
+    uint8_t buffer[256];
+    float dataFloat_list[2] = {dataFloat1, dataFloat2};
+    int dataFloat_num = 2;
+    int data_n = sizeof(dataFloat1) * dataFloat_num + sizeof(justFloat_tail);
+    for (int i = 0; i < dataFloat_num; i++) {
+        memcpy(buffer + i*sizeof(dataFloat1), &dataFloat_list[i], sizeof(dataFloat1));
+    }
+    memcpy(buffer + dataFloat_num*sizeof(dataFloat1) , &justFloat_tail, sizeof(justFloat_tail));
+    memcpy(txDMA_buffer, buffer, sizeof(buffer));
+    if (TxCompleteFlag == 1) {
+        TxCompleteFlag = 0;
+        HAL_UART_Transmit_DMA(&print_uart, (uint8_t*)txDMA_buffer, data_n);
+    }
+}
+void UART_DMASendVOFA_justFloat1(float dataFloat1) {
+// void UART_DMASend1(float dataFloat1) {
+    uint8_t justFloat_tail[4] = {0, 0, 0x80, 0x7f};
+    uint8_t buffer[256];
+    int data_n = sizeof(dataFloat1) + sizeof(justFloat_tail);
+    memcpy(buffer, &dataFloat1, sizeof(dataFloat1));
+    memcpy(buffer + sizeof(dataFloat1), &justFloat_tail, sizeof(justFloat_tail));
+    memcpy(txDMA_buffer, buffer, sizeof(buffer));
+    // HAL_UART_Transmit_DMA(&print_uart, (uint8_t*)txDMA_buffer, data_n);
+    if (TxCompleteFlag == 1) {
+        TxCompleteFlag = 0;
+        HAL_UART_Transmit_DMA(&print_uart, (uint8_t*)txDMA_buffer, data_n);
+    }
 }
 // 发送浮点数数组的函数
 void UART_SendDataFloat(float *data, uint8_t count)
@@ -63,7 +131,7 @@ void UART_SendFloat(uint8_t count, ...)
     for(uint8_t i = 0; i < count; ++i)
     {
         double value = va_arg(args, double);
-        int written = snprintf(buffer + length, sizeof(buffer) - length, i < count - 1 ? "%.3f," : "%.3f\n", (float)value);
+        int written = snprintf(buffer + length, sizeof(buffer) - length, i < count - 1 ? "%.4f," : "%.4f\n", (float)value);
 
         if(written < 0)
         {

@@ -21,12 +21,19 @@ void PIDController_init(PIDController *pid, float P, float I, float D, float ram
 float PIDController_update(PIDController *pid, float error)
 {
     // calculate the time from the last call
-    unsigned long timestamp_now = getUs();
+    unsigned int delta_us;
+    unsigned int timestamp_now = getUs();
+    if (timestamp_now > pid->timestamp_prev) {
+        delta_us = (timestamp_now - pid->timestamp_prev);
+    }
+    else {
+        delta_us = (0xFFFFFFFF - pid->timestamp_prev) + timestamp_now + 1;
+    }
+    float Ts = (float)delta_us / 1000000.0f;
     // float Ts = PID_UPDATE_T * 1e-3;
-    float Ts = (timestamp_now - pid->timestamp_prev) * 1e-6;
     // quick fix for strange cases (micros overflow)
     if (Ts <= 0 || Ts > 0.5)
-        Ts = 1e-3;
+        Ts = 1e-3f;
 
     // u(s) = (P + I/s + Ds)e(s)
     // Discrete implementations

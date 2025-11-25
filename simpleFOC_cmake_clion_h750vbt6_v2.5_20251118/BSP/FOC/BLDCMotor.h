@@ -15,7 +15,7 @@
 
 
 #define  CONFIG_VoltageSupply   12
-#define  CONFIG_VoltageLimit    10
+#define  CONFIG_VoltageLimit    12
 #define  CONFIG_PWM_HZ          10e3
 #define  CONFIG_PWM_RESOLUTION  4096
 #define  CONFIG_PWM_DriverType  DriverTye_3PWM // DriverTye_3PWM or DriverTye_6PWM  0:3pwm, 1:6pwm
@@ -49,7 +49,7 @@ typedef struct
                          //!< Park and Clarke transform
 
     // open loop variables
-    long open_loop_timestamp;
+    uint32_t open_loop_timestamp;
     GPIO_TypeDef *enable_Port;
     uint16_t enable_Pin;
     PIDController *pid;
@@ -57,6 +57,7 @@ typedef struct
     PIDController PID_id;
     PIDController PID_iq;
     PIDController PID_velocity;
+    PIDController PID_velocityOnly;
     PIDController PID_angle;
     PIDController PID_degree;
     float velocity;
@@ -78,6 +79,7 @@ typedef struct
    LowPassFilter_t filter_velocity, filter_angle;
     int deadzone_enable;
     float deadzone_uq;
+  uint32_t delta_us;
 
 
 } BLDCMotor_t;
@@ -131,4 +133,7 @@ void BLDCMotor_currentVelocityOpenloop(BLDCMotor_t *motor, float target_velocity
 void BLDCMotor_initPID_CurrentVelocityAngle_Inline(BLDCMotor_t *motor, int pp, EncoderType_enum encoderType, ControlType_t controllerType, PIDController pid_id, PIDController pid_iq, PIDController pid_velocity, PIDController pid_degree);
 int BLDCMotor_currentClosedLoopBandwithInline(BLDCMotor_t *motor, float target);
 void BLDCMotor_currentVelocityOpenloopInline(BLDCMotor_t *motor, float target_velocity);
+void BLDCMotor_KeyControl(BLDCMotor_t *motor);
+float BLDCMotor_getCurrentDQ_Polling(BLDCMotor_t *motor);
+int BLDCMotor_velocityClosedLoopInline(BLDCMotor_t *motor, float target);
 #endif // !__BLDCMOTOR_H

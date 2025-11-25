@@ -362,6 +362,11 @@ void Clark_Park_Transform(float Ia, float Ib, float *Id, float *Iq, float e_angl
     *Iq = -I_alpha * sin_theta + I_beta * cos_theta;
 
 }
+void Clark_Park_TransformIaIc(float Ia, float Ic, float *Id, float *Iq, float e_angle)
+{
+    float Ib = -(Ia + Ic);
+    Clark_Park_Transform(Ia, Ib, Id, Iq, e_angle);
+}
 void Debug_Transformations(void)
 {
     printf("=== Coordinate Transform Check ===\n");

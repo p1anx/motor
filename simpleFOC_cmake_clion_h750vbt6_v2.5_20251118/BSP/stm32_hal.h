@@ -79,6 +79,8 @@
     #define DEBUG_OK(fmt, ...)
     #define DEBUG_PRINT(fmt, ...)
 #endif
+extern  TIM_HandleTypeDef htim2;
+#define us_htim htim2
 
 extern UART_HandleTypeDef huart3;
 extern UART_HandleTypeDef huart1;
@@ -86,6 +88,10 @@ extern UART_HandleTypeDef huart1;
 void UART_SendDataFloat(float *data, uint8_t count);
 void UART_SendFloat(uint8_t count, ...);
 void UART_SendFloat_DMA(uint8_t count, ...);
+void UART_DMASendVOFA_justFloat1(float dataFloat1);
+void UART_DMASendVOFA_justFloat2(float dataFloat1, float dataFloat2);
+void UART_DMASendVOFA_justFloat4(float dataFloat1, float dataFloat2, float dataFloat3, float dataFloat4);
+uint32_t HAL_GetTickUs(void);
 
 // 使用示例
 // DEBUG_ERROR("AS5600 not connected");

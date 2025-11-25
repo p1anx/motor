@@ -4,11 +4,138 @@
 #include "stm32_hal.h"
 #include <string.h>
 #include <stdio.h>
+#include "stm32h7_dma/stm32h7_dma.h"
 extern int TxCompleteFlag;
 char buffer[3];
 extern char txDMA_buffer[256];
+extern uint8_t tempData[8];
+float data_float[1];
+uint8_t tail[4] = {0, 0, 0x80, 0x7f};
+uint8_t head[4] = {0, 0};
+DMA_BUFFER uint8_t Data[8] = {0, 0, 0, 0, 0, 0,0x80, 0x7F};
+DMA_BUFFER float DataFloat[1];
+float data16[16];
+void UART_DMASend2(float dataFloat1, float dataFloat2) {
+    uint8_t justFloat_tail[4] = {0, 0, 0x80, 0x7f};
+    uint8_t buffer[256];
+    float dataFloat_list[2] = {dataFloat1, dataFloat2};
+    int dataFloat_num = 2;
+    int data_n = sizeof(dataFloat1) * dataFloat_num + sizeof(justFloat_tail);
+    for (int i = 0; i < dataFloat_num; i++) {
+        memcpy(buffer + i*sizeof(dataFloat1), &dataFloat_list[i], sizeof(dataFloat1));
+    }
+    memcpy(buffer + dataFloat_num*sizeof(dataFloat1) , &justFloat_tail, sizeof(justFloat_tail));
+    memcpy(txDMA_buffer, buffer, sizeof(buffer));
+    HAL_UART_Transmit_DMA(&print_uart, (uint8_t*)txDMA_buffer, data_n);
+}
+void UART_DMASend1(float dataFloat1) {
+    uint8_t justFloat_tail[4] = {0, 0, 0x80, 0x7f};
+    uint8_t buffer[256];
+    int data_n = sizeof(dataFloat1) + sizeof(justFloat_tail);
+    memcpy(buffer, &dataFloat1, sizeof(dataFloat1));
+    memcpy(buffer + sizeof(dataFloat1), &justFloat_tail, sizeof(justFloat_tail));
+    memcpy(txDMA_buffer, buffer, sizeof(buffer));
+    HAL_UART_Transmit_DMA(&print_uart, (uint8_t*)txDMA_buffer, data_n);
+}
 
-void test_uart(void)
+void test_uart(void) {
+    printf("start uart1\n");
+    HAL_UART_Transmit_DMA(&print_uart, (uint8_t*)txDMA_buffer, strlen(txDMA_buffer));
+    // strcpy(txDMA_buffer, "hello world, uart1\n");
+    float data_float[2];
+    data_float[0] = 10.0f;
+    data_float[1] = 10.0f;
+    int last_t = 0;
+    while (1) {
+        int t1 = getUs();
+        if (t1 -last_t > 500) {
+            if (TxCompleteFlag == 1) {
+                TxCompleteFlag = 0;
+                data_float[0] += 1.0f;
+                if (data_float[0] > 100.0f) {
+                    data_float[0] = 10.0f;
+                }
+                // HAL_UART_Transmit_DMA(&print_uart, (uint8_t*)txDMA_buffer, strlen(txDMA_buffer));
+                // HAL_UART_Transmit(&print_uart, (uint8_t*)txDMA_buffer, strlen(txDMA_buffer), 1000);
+                //3.
+                // UART_DMASendVOFA_justFloat1(data_float[0]);
+                // UART_DMASend1(data_float[0]);
+                UART_DMASend2(data_float[0], data_float[1]);
+                last_t = t1;
+            }
+        }
+
+
+    }
+
+}
+void test_uart2(void) {
+    printf("start vofa test\n");
+    // HAL_UART_Transmit_DMA(&huart1, tempData, 8);
+    // HAL_UART_Transmit_DMA(&huart1, Data, 8);
+    // strcpy(txDMA_buffer, "hello world\n");
+    txDMA_buffer[0] = 0x11;
+    txDMA_buffer[1] = 0x12;
+    txDMA_buffer[2] = 0x13;
+    txDMA_buffer[3] = 0x14;
+    txDMA_buffer[4] = 0x0;
+    txDMA_buffer[5] = 0x0;
+    txDMA_buffer[6] = 0x80;
+    txDMA_buffer[7] = 0x7f;
+    // static uint8_t vofa_justFloat0[8] = {0, 0, 0, 0, 0, 0, 0x80, 0x7F};
+    // memcpy(txDMA_buffer, (char*)vofa_justFloat0, 8);
+    // txDMA_buffer[5] = '\n';
+
+    HAL_UART_Transmit_DMA(&huart1, (uint8_t*)txDMA_buffer, strlen(txDMA_buffer));
+    // HAL_UART_Transmit_DMA(&huart1, (uint8_t*)txDMA_buffer, 8);
+    data_float[0] = 10.0f;
+    DataFloat[0] = 10.0f;
+    while (1) {
+        data_float[0] += 1.0f;
+        DataFloat[0] += 2.0f;
+        if (data_float[0] > 100.0f) {
+            data_float[0] = 10.0f;
+        }
+        if (DataFloat[0] > 1000.0f) {
+            DataFloat[0] = 10.0f;
+
+        }
+        // 1.
+         // memcpy(head, (uint8_t*)&data_float, 4);
+         // HAL_UART_Transmit(&print_uart, head, 4, 1000);
+         // HAL_UART_Transmit(&print_uart, tail, 4, 1000);
+         // HAL_Delay(1);
+
+        //2.
+        //  memcpy(txDMA_buffer, (uint8_t*)&data_float, sizeof(data_float));
+        // if (TxCompleteFlag == 1) {
+        //     TxCompleteFlag = 0;
+        //     HAL_UART_Transmit_DMA(&huart1, (uint8_t*)txDMA_buffer, 8);
+        // }
+        // HAL_Delay(1);
+        //3.
+        // UART_DMASend1(data_float[0]);
+        UART_DMASend2(data_float[0], DataFloat[0]);
+        //3.not ok
+        // memcpy(vofa_justFloat, (uint8_t*)&data_float, sizeof(data_float));
+        // HAL_UART_Transmit(&print_uart,vofa_justFloat, 8, 1000);
+
+        // // memcpy(txDMA_buffer, (uint8_t*)&DataFloat, sizeof(DataFloat));
+        // memcpy(Data, (uint8_t*)&DataFloat, sizeof(DataFloat));
+        //  // memcpy(Data, (uint8_t*)&data_float, 4);
+        // if (TxCompleteFlag == 1) {
+        //     TxCompleteFlag = 0;
+        //     // HAL_UART_Transmit_DMA(&huart1, (uint8_t*)txDMA_buffer, strlen(txDMA_buffer));
+        //     // HAL_UART_Transmit_DMA(&huart1, (uint8_t*)txDMA_buffer, 8);
+        //     HAL_UART_Transmit_DMA(&print_uart, Data, 8);
+        // }
+        HAL_Delay(1);
+
+
+    }
+
+}
+void test_uart1(void)
 {
     float data_float = 3000.0f;
     int delta_t;

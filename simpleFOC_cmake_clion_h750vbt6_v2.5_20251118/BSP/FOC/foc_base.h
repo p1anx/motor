@@ -62,4 +62,5 @@ void Clarke_Transform(float Ia, float Ib, float *I_alpha, float *I_beta);
 float _electricalAngle_calibrated(const int direction, const float shaft_angle, const int pole_pairs, const float zero_electric_angle);
 void Debug_Transformations(void);
 void Clark_Park_Transform(float Ia, float Ib, float *Id, float *Iq, float e_angle);
+void Clark_Park_TransformIaIc(float Ia, float Ic, float *Id, float *Iq, float e_angle);
 #endif

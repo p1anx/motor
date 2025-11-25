@@ -24,7 +24,7 @@ extern "C"
 
         float integral_prev;          //!< last integral component value
         float error_prev;             //!< last tracking error value
-        unsigned long timestamp_prev; //!< Last execution timestamp
+        unsigned int timestamp_prev; //!< Last execution timestamp
         float output_prev;            //!< last pid output value
     } PIDController;
 

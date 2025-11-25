@@ -168,6 +168,7 @@ float Encoder_getVelocity(Encoder_t *encoder)
         velocity = MT6835_GetVelocityHz(&encoder->mt6835);
         // velocity = MT6835_GetVelocityDegrees(&encoder->mt6835);
         encoder->angle = encoder->mt6835.angle;
+        encoder->delta_t_us = encoder->mt6835.delta_t_us;
         return velocity;
     default:
         printf("please choose a valid encoder type!\n");

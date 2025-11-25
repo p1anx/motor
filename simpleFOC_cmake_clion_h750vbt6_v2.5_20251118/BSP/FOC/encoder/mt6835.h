@@ -101,6 +101,7 @@ struct  MT6835_t{
     float velocity;
     Motor_AngleCalc_Handle motor_angle_calc;
     Motor_Angle_t motor_angle;
+    uint32_t delta_t_us;
 };
 
 /* 函数声明 */

@@ -69,6 +69,7 @@ extern "C"
 
         float angle;
         float initial_angle_offset;
+        uint32_t delta_t_us;
     } Encoder_t;
     int Encoder_init(Encoder_t *encoder);
     void Encoder_linkAS5600(Encoder_t *encoder, AS5600_t *as5600);

@@ -5,6 +5,7 @@
 
 #define BLDCMOTOR_ENABLE_PORT GPIOD
 #define BLDCMOTOR_ENABLE_PIN GPIO_PIN_13
+#define CONFIG_FILTER_Tf 0.08    //!< default velocity filter time constant
 
 #define DEF_POWER_SUPPLY 2 //!< default power supply voltage
 // velocity PI controller params

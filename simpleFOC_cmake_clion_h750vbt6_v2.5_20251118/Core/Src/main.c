@@ -125,6 +125,8 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
     printf("hello foc\n");
+    HAL_UART_Transmit(&huart1, "hello\n", 6, 1000);
+    HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_2);
     HAL_Delay(1000);
 
   }

@@ -14,6 +14,8 @@
 CurrentSense_t currentSense;
 extern BLDCMotor_t motor;
 extern MultiRate_Controller_t MultiRate_Controller;
+// extern char txDMA_buffer[256];
+extern uint8_t txDMA_VOFA_Buffer[256];
 
 void test_adc(void) {
   // HAL_ADCEx_Calibration_Start(&currentSense_adc1, ADC_CALIB_OFFSET,
@@ -107,8 +109,30 @@ float currentSense_pollingGetVoltage(CurrentSense_t *pCurrent_sense) {
   float v = (float)currentSense_pollingADCRawValue(pCurrent_sense->adc)*3.3/currentSense.adc_resolution;
   return v;
 }
-
 void currentSense_pollingCalibrate(CurrentSense_t *pCurrentSense) {
+  const int sample_n =  10000;
+  float sum_a=0, sum_b = 0, sum_c = 0;
+  float i_scale = 1/(pCurrentSense->R_sample * pCurrentSense->gain);
+  for (int i = 0; i < sample_n; i++) {
+
+    sum_a += currentSense_pollingGetVoltage(pCurrentSense)*i_scale;
+    sum_b += currentSense_pollingGetVoltage(pCurrentSense)*i_scale;
+    if (pCurrentSense->isSetIc)sum_c += currentSense_pollingGetVoltage(pCurrentSense)*i_scale;
+    // delay_ms(1);
+  }
+  pCurrentSense->offset_a = sum_a / sample_n;
+  pCurrentSense->offset_b = sum_b / sample_n;
+  if (pCurrentSense->isSetIc) {
+    pCurrentSense->offset_c = sum_b / sample_n;
+  }
+  else {
+    pCurrentSense->offset_c = -1.0f;
+  }
+  printf("offset: va=%.4fv, vb=%.4fv, vc=%.4fv\n",pCurrentSense->offset_a, pCurrentSense->offset_b, pCurrentSense->offset_c);
+
+}
+
+void currentSense_pollingCalibrateVoltage(CurrentSense_t *pCurrentSense) {
   const int sample_n =  1000;
   float sum_a=0, sum_b = 0, sum_c = 0;
   for (int i = 0; i < sample_n; i++) {
@@ -129,13 +153,51 @@ void currentSense_pollingCalibrate(CurrentSense_t *pCurrentSense) {
   printf("offset: va=%.4fv, vb=%.4fv, vc=%.4fv\n",pCurrentSense->offset_a, pCurrentSense->offset_b, pCurrentSense->offset_c);
 
 }
-
 void currentSense_pollingGetCurrent(CurrentSense_t *pCurrentSense) {
+  // pCurrentSense->offset_a = 0;
+  // pCurrentSense->offset_b = 0;
+  // pCurrentSense->offset_c = 0;
   float i_scale = 1/(pCurrentSense->R_sample * pCurrentSense->gain);
+  float bias = 0.0f;
+  // float i_scale = 1;
+  pCurrentSense->i_a =  (currentSense_pollingGetVoltage(pCurrentSense))*i_scale - pCurrentSense->offset_a-bias;
+  pCurrentSense->i_b =  -((currentSense_pollingGetVoltage(pCurrentSense))*i_scale - pCurrentSense->offset_b-bias);
+  if (pCurrentSense->isSetIc)pCurrentSense->i_c = (currentSense_pollingGetVoltage(pCurrentSense))*i_scale - pCurrentSense->offset_c;
+}
+void currentSense_pollingCalibrate0(CurrentSense_t *pCurrentSense) {
+  const int sample_n =  1000;
+  float sum_a=0, sum_b = 0, sum_c = 0;
+  for (int i = 0; i < sample_n; i++) {
+
+    float i_scale = 1;
+    sum_a += currentSense_pollingGetVoltage(pCurrentSense);
+    sum_b += currentSense_pollingGetVoltage(pCurrentSense);
+    if (pCurrentSense->isSetIc)sum_c += currentSense_pollingGetVoltage(pCurrentSense);
+    delay_ms(1);
+  }
+  pCurrentSense->offset_a = sum_a / sample_n;
+  pCurrentSense->offset_b = sum_b / sample_n;
+  if (pCurrentSense->isSetIc) {
+    pCurrentSense->offset_c = sum_b / sample_n;
+  }
+  else {
+    pCurrentSense->offset_c = -1.0f;
+  }
+  printf("offset: va=%.4fv, vb=%.4fv, vc=%.4fv\n",pCurrentSense->offset_a, pCurrentSense->offset_b, pCurrentSense->offset_c);
+
+}
+
+void currentSense_pollingGetCurrent0(CurrentSense_t *pCurrentSense) {
+  // pCurrentSense->offset_a = 0;
+  // pCurrentSense->offset_b = 0;
+  // pCurrentSense->offset_c = 0;
+  // float i_scale = 1/(pCurrentSense->R_sample * pCurrentSense->gain);
+  float i_scale = 1;
   pCurrentSense->i_a = (currentSense_pollingGetVoltage(pCurrentSense) - pCurrentSense->offset_a)*i_scale;
   pCurrentSense->i_b = -(currentSense_pollingGetVoltage(pCurrentSense) - pCurrentSense->offset_b)*i_scale;
   if (pCurrentSense->isSetIc)pCurrentSense->i_c = (currentSense_pollingGetVoltage(pCurrentSense) - pCurrentSense->offset_c)*i_scale;
 }
+
 
 uint16_t CurrentSense_Sampling(CurrentSense_t *currentSense) {
   uint16_t adc_value;
@@ -591,10 +653,11 @@ void currentSense_3currentVoltage(CurrentSense_t *currentSense) {
   const float i_scales = 1/(currentSense->R_sample*currentSense->gain);
   const int sampleA_phase = 1;
   const int sampleB_phase = 1;
+  // float v_bias =
 
-  currentSense->i_a = (HAL_ADCEx_InjectedGetValue(currentSense->adc, ADC_INJECTED_RANK_1) * v_scales - currentSense->offset_a)*i_scales;
-  currentSense->i_b = (HAL_ADCEx_InjectedGetValue(currentSense->adc, ADC_INJECTED_RANK_2) * v_scales - currentSense->offset_a)*i_scales;
-  currentSense->i_c = (HAL_ADCEx_InjectedGetValue(currentSense->adc, ADC_INJECTED_RANK_3) * v_scales - currentSense->offset_a)*i_scales;
+  currentSense->i_a = -(HAL_ADCEx_InjectedGetValue(currentSense->adc, ADC_INJECTED_RANK_1) * v_scales - currentSense->offset_a)*i_scales;
+  currentSense->i_b = (HAL_ADCEx_InjectedGetValue(currentSense->adc, ADC_INJECTED_RANK_2) * v_scales - currentSense->offset_b)*i_scales;
+  currentSense->i_c = (HAL_ADCEx_InjectedGetValue(currentSense->adc, ADC_INJECTED_RANK_3) * v_scales - currentSense->offset_c)*i_scales;
 }
 void currentSense_getCurrentDQ_NotFilter(CurrentSense_t *currentSense) {
   float i_alpha, i_beta, i_d, i_q;
@@ -614,6 +677,8 @@ void currentSense_clarkParkTransform(CurrentSense_t *currentSense, float e_angle
   Clarke_Transform(currentSense->i_a, currentSense->i_b, &currentSense->i_alpha, &currentSense->i_beta);
   Park_Transform(currentSense->i_alpha, currentSense->i_beta,e_angle, &currentSense->i_d, &currentSense->i_q);
 }
+extern uint8_t tempData[8];
+float temp[1];
 void currentSense_ADC_Callback(ADC_HandleTypeDef *hadc) {
   char buffer[100];
   if (hadc->Instance == ADC1) {
@@ -621,41 +686,18 @@ void currentSense_ADC_Callback(ADC_HandleTypeDef *hadc) {
     if (currentSense.isCalibrating) {
       currentSense_3currentCalibrationVoltage(&currentSense);
     } else {
-      if (!motor.currentSense->isReady) {
+      // if (!motor.currentSense->isReady)
+        {
         currentSense_3currentVoltage(&currentSense);
-        // sprintf(buffer, "%f,%f\n", currentSense.i_a, currentSense.i_b);
-        // HAL_UART_Transmit(&print_uart, buffer, strlen(buffer), 1000);
+        // motor.currentSense->i_a = currentSense.i_a;
+        // motor.currentSense->i_b = currentSense.i_b;
 
         currentSense.i_a = lpf_process(&motor.lpf_ia0, currentSense.i_a);
         currentSense.i_b = lpf_process(&motor.lpf_ib0, currentSense.i_b);
-        Clark_Park_Transform(currentSense.i_a, currentSense.i_b,
+        Clark_Park_TransformIaIc(currentSense.i_a, currentSense.i_b,
                              &currentSense.i_d, &currentSense.i_q,
                              motor.e_angle);
 
-        // UART_SendFloat(2, motor.currentSense->i_q, motor.currentSense->i_d);
-
-        // 2.
-        //  float ia = LowPassFilter(&motor.lpf_ia, currentSense.i_a);
-        //  float ib = LowPassFilter(&motor.lpf_ib, currentSense.i_b);
-        //  sprintf(buffer, "%f,%f\n", ia, ib);
-        // 3.
-        //  float id = LowPassFilter(&motor.lpf_id, currentSense.i_d);
-        //  float iq = LowPassFilter(&motor.lpf_iq, currentSense.i_q);
-        //  sprintf(buffer, "%f,%f\n", iq, id);
-        //  HAL_UART_Transmit(&print_uart, buffer, strlen(buffer), 1000);
-        // 3.
-        //  motor.CurrentSense.i_a = LowPassFilter(&motor.lpf_ia,
-        //  currentSense.i_a); motor.CurrentSense.i_b =
-        //  LowPassFilter(&motor.lpf_ib, currentSense.i_b);
-        // 4.
-        //  motor.CurrentSense.i_a = lpf_process(&motor.lpf_ia0,
-        //  currentSense.i_a); motor.CurrentSense.i_b =
-        //  lpf_process(&motor.lpf_ib0, currentSense.i_b);
-
-        // float i_a = lpf_process(&motor.lpf_ia0, currentSense.i_a);
-        // float i_b = lpf_process(&motor.lpf_ib0, currentSense.i_b);
-        // sprintf(buffer, "%f,%f\n", i_a, i_b);
-        // HAL_UART_Transmit(&print_uart, buffer, strlen(buffer), 1000);
 
         currentSense.i_d = lpf_process(&motor.lpf_id0, currentSense.i_d);
         currentSense.i_q = lpf_process(&motor.lpf_iq0, currentSense.i_q);
@@ -663,8 +705,17 @@ void currentSense_ADC_Callback(ADC_HandleTypeDef *hadc) {
         motor.CurrentSense.i_b = currentSense.i_b;
         motor.CurrentSense.i_d = currentSense.i_d;
         motor.CurrentSense.i_q = currentSense.i_q;
-        // sprintf(buffer, "%f,%f\n", i_q, i_d);
-        // HAL_UART_Transmit(&print_uart, buffer, strlen(buffer), 1000);
+
+          motor.currentSense->i_d = currentSense.i_d;
+          motor.currentSense->i_q = currentSense.i_q;
+          // HAL_UART_Transmit(&print_uart, (uint8_t*)tempData, 8, 100);
+          // UART_DMASendVOFA_justFloat2(currentSense.i_a,currentSense.i_b);
+          // UART_DMASendVOFA_justFloat2(currentSense.i_d,currentSense.i_q);
+          //for id iq debug
+          // UART_DMASendVOFA_justFloat4(currentSense.i_a, motor.target, currentSense.i_d,currentSense.i_q);
+          //2.
+          UART_DMASendVOFA_justFloat2(motor.target,motor.velocity);
+
 
         motor.currentSense->isReady = true;
       }

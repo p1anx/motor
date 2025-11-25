@@ -239,7 +239,18 @@ float MT6835_GetVelocityHz(MT6835_t *mt6835)
     static float last_angle = 0;
     static int circle = 0;
     static int last_circle = 0;
-    static unsigned long last_t_us = 0;
+    static uint32_t last_t_us = 0;
+    static uint32_t delta_t_us;
+    static int initialized = 0;
+    float velocity;
+    if (!initialized) {
+        initialized = 1;
+        last_t_us = getUs();
+        last_angle = MT6835_GetAngleHz(mt6835);
+        mt6835->angle = last_angle;
+        mt6835->velocity = 0;
+        return mt6835->velocity;
+    }
     float angle = MT6835_GetAngleRadians(mt6835);
     mt6835->angle = angle;
     float delta_angle = angle - last_angle;
@@ -255,24 +266,31 @@ float MT6835_GetVelocityHz(MT6835_t *mt6835)
         }
     }
 
-    unsigned long  t_us = getUs();
-    unsigned long delta_t_us;
-    if (t_us >= last_t_us)
+    uint32_t  t_us = getUs();
+    delta_t_us = t_us - last_t_us;
+    if (t_us > last_t_us)
     {
          delta_t_us = t_us - last_t_us;
     }
     else
     {
-        delta_t_us = (0xFFFFFFFFUL - last_t_us) + t_us + 1;
+        delta_t_us = (0xFFFFFFFF - last_t_us) + t_us + 1;
     }
     float delta_t = (float)delta_t_us / 1000000.0f;
+    mt6835->delta_t_us = delta_t_us;
+    if (delta_t <= 5e-6 || delta_t > 0.5) {
+        delta_t = 1e-3f;
+    }
     float total_angle = (circle - last_circle)*_2PI + (angle - last_angle);
-    float velocity = total_angle / delta_t /_2PI;
+    velocity = total_angle / delta_t /_2PI;
     mt6835->velocity = velocity;
 
     last_angle = angle;
     last_circle = circle;
     last_t_us = t_us;
+    // if (velocity < 1) {
+    //     UART_SendFloat(2, velocity, delta_t);
+    // }
 
     return mt6835->velocity;
 }

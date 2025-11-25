@@ -12,19 +12,14 @@
 #include "pwm.h"
 #include "stm32_hal.h"
 #include <stdio.h>
-
+#include "motor_config.h"
 #include <string.h>
 
+extern int g_keyFlag;
 BLDCMotor_t motor;
 extern CurrentSense_t currentSense;
 extern MultiRate_Controller_t MultiRate_Controller;
 
-int BLDCMotor_enable_0(BLDCMotor_t *motor)
-{
-    HAL_GPIO_WritePin(motor->enable_Port, motor->enable_Pin, SET);
-    motor->isEnable = 1;
-    return 0;
-}
 int BLDCMotor_enable(BLDCMotor_t *motor)
 {
     BLDCDriverPWM_enable(&motor->Driver);
@@ -98,274 +93,6 @@ void BLDCDriver6PWM_setPwm(BLDCDriver_t *driver, float Ua, float Ub, float Uc)
     BLDCDriver_writeDutyCycle6PWM(dc_a, dc_b, dc_c);
 }
 
-void BLDCMotor_setPhaseVoltage_0(BLDCMotor_t *motor, float Uq, float Ud, float angle_el)
-{
-    if (!motor || !motor->driver)
-    {
-        PRINT_ERROR("setPhaseVoltage---motor or driver problem");
-        return;
-    }
-
-    // Check if this is a 6PWM driver by checking function pointer
-    // For 6PWM drivers, we can use centered modulation more effectively
-    const int centered = 1;
-    int sector;
-    float _ca, _sa;
-
-    switch (motor->foc_motor.foc_modulation)
-    {
-    case FOCModulationType_SinePWM:
-        // Sinusoidal PWM modulation
-        // Inverse Park + Clarke transformation
-
-        // angle normalization in between 0 and 2pi
-        // only necessary if using _sin and _cos - approximation functions
-        //1.
-        // angle_el = _normalizeAngle(angle_el + motor->foc_motor.zero_electric_angle);
-        //2.
-        motor->e_angle = angle_el;
-        _ca = _cos(angle_el);
-        _sa = _sin(angle_el);
-        // Inverse park transform
-        motor->Ualpha = _ca * Ud - _sa * Uq; // -sin(angle) * Uq;
-        motor->Ubeta = _sa * Ud + _ca * Uq;  //  cos(angle) * Uq;
-
-        // Clarke transform
-        // Check if using 6PWM driver - can handle bipolar voltages better
-        // For 6PWM, we can center around 0V instead of VCC/2
-        motor->Ua = motor->Ualpha;
-        motor->Ub = -0.5f * motor->Ualpha + _SQRT3_2 * motor->Ubeta;
-        motor->Uc = -0.5f * motor->Ualpha - _SQRT3_2 * motor->Ubeta;
-
-        // For compatibility with 3PWM drivers, add offset if needed
-        if (centered)
-        {
-            motor->Ua += motor->driver->voltage_limit / 2;
-            motor->Ub += motor->driver->voltage_limit / 2;
-            motor->Uc += motor->driver->voltage_limit / 2;
-        }
-
-        if (!centered)
-        {
-            float Umin = fminf(motor->Ua, fminf(motor->Ub, motor->Uc));
-            motor->Ua -= Umin;
-            motor->Ub -= Umin;
-            motor->Uc -= Umin;
-        }
-
-        // printf("it's in setPhaseVoltage\n");
-        break;
-
-    case FOCModulationType_SpaceVectorPWM:
-        // Nice video explaining the SpaceVectorModulation (SVPWM) algorithm
-        // https://www.youtube.com/watch?v=QMSWUMEAejg
-
-        // if negative voltages change inverse the phase
-        // angle + 180degrees
-        if (Uq < 0)
-            angle_el += _PI;
-        Uq = fabsf(Uq);
-
-        // angle normalisation in between 0 and 2pi
-        // only necessary if using _sin and _cos - approximation functions
-        angle_el = _normalizeAngle(angle_el + motor->foc_motor.zero_electric_angle + _PI_2);
-
-        // find the sector we are in currently
-        sector = (int)floorf(angle_el / _PI_3) + 1;
-        // calculate the duty cycles
-        float T1 = _SQRT3 * _sin(sector * _PI_3 - angle_el) * Uq / motor->driver->voltage_limit;
-        float T2 = _SQRT3 * _sin(angle_el - (sector - 1.0f) * _PI_3) * Uq / motor->driver->voltage_limit;
-        // two versions possible
-        float T0 = 0; // pulled to 0 - better for low power supply voltage
-        if (centered)
-        {
-            T0 = 1 - T1 - T2; // centered around driver->voltage_limit/2
-        }
-
-        // calculate the duty cycles(times)
-        float Ta, Tb, Tc;
-        switch (sector)
-        {
-        case 1:
-            Ta = T1 + T2 + T0 / 2;
-            Tb = T2 + T0 / 2;
-            Tc = T0 / 2;
-            break;
-        case 2:
-            Ta = T1 + T0 / 2;
-            Tb = T1 + T2 + T0 / 2;
-            Tc = T0 / 2;
-            break;
-        case 3:
-            Ta = T0 / 2;
-            Tb = T1 + T2 + T0 / 2;
-            Tc = T2 + T0 / 2;
-            break;
-        case 4:
-            Ta = T0 / 2;
-            Tb = T1 + T0 / 2;
-            Tc = T1 + T2 + T0 / 2;
-            break;
-        case 5:
-            Ta = T2 + T0 / 2;
-            Tb = T0 / 2;
-            Tc = T1 + T2 + T0 / 2;
-            break;
-        case 6:
-            Ta = T1 + T2 + T0 / 2;
-            Tb = T0 / 2;
-            Tc = T1 + T0 / 2;
-            break;
-        default:
-            // possible error state
-            Ta = 0;
-            Tb = 0;
-            Tc = 0;
-        }
-
-        // calculate the phase voltages and center
-        motor->Ua = Ta * motor->driver->voltage_limit;
-        motor->Ub = Tb * motor->driver->voltage_limit;
-        motor->Uc = Tc * motor->driver->voltage_limit;
-        break;
-    }
-
-    BLDCDriver6PWM_setPwm(motor->driver, motor->Ua, motor->Ub, motor->Uc);
-}
-void BLDCMotor_setPhaseVoltage_1(BLDCMotor_t *motor, float Uq, float Ud, float angle_el)
-{
-    if (!motor || !(&(motor->Driver)))
-    {
-        PRINT_ERROR("setPhaseVoltage---motor or driver problem");
-        return;
-    }
-
-    // Check if this is a 6PWM driver by checking function pointer
-    // For 6PWM drivers, we can use centered modulation more effectively
-    const int centered = 1;
-    int sector;
-    float _ca, _sa;
-
-    switch (motor->foc_motor.foc_modulation)
-    {
-    case FOCModulationType_SinePWM:
-        // Sinusoidal PWM modulation
-        // Inverse Park + Clarke transformation
-
-        // angle normalization in between 0 and 2pi
-        // only necessary if using _sin and _cos - approximation functions
-        //1.
-        // angle_el = _normalizeAngle(angle_el + motor->foc_motor.zero_electric_angle);
-        //2.
-        motor->e_angle = angle_el;
-        _ca = _cos(angle_el);
-        _sa = _sin(angle_el);
-        // Inverse park transform
-        motor->Ualpha = _ca * Ud - _sa * Uq; // -sin(angle) * Uq;
-        motor->Ubeta = _sa * Ud + _ca * Uq;  //  cos(angle) * Uq;
-
-        // Clarke transform
-        // Check if using 6PWM driver - can handle bipolar voltages better
-        // For 6PWM, we can center around 0V instead of VCC/2
-        motor->Ua = motor->Ualpha;
-        motor->Ub = -0.5f * motor->Ualpha + _SQRT3_2 * motor->Ubeta;
-        motor->Uc = -0.5f * motor->Ualpha - _SQRT3_2 * motor->Ubeta;
-
-        // For compatibility with 3PWM drivers, add offset if needed
-        if (centered)
-        {
-            motor->Ua += motor->Driver.voltage_limit / 2;
-            motor->Ub += motor->Driver.voltage_limit / 2;
-            motor->Uc += motor->Driver.voltage_limit / 2;
-        }
-
-        if (!centered)
-        {
-            float Umin = fminf(motor->Ua, fminf(motor->Ub, motor->Uc));
-            motor->Ua -= Umin;
-            motor->Ub -= Umin;
-            motor->Uc -= Umin;
-        }
-
-        // printf("it's in setPhaseVoltage\n");
-        break;
-
-    case FOCModulationType_SpaceVectorPWM:
-        // Nice video explaining the SpaceVectorModulation (SVPWM) algorithm
-        // https://www.youtube.com/watch?v=QMSWUMEAejg
-
-        // if negative voltages change inverse the phase
-        // angle + 180degrees
-        if (Uq < 0)
-            angle_el += _PI;
-        Uq = fabsf(Uq);
-
-        // angle normalisation in between 0 and 2pi
-        // only necessary if using _sin and _cos - approximation functions
-        angle_el = _normalizeAngle(angle_el + motor->foc_motor.zero_electric_angle + _PI_2);
-
-        // find the sector we are in currently
-        sector = (int)floorf(angle_el / _PI_3) + 1;
-        // calculate the duty cycles
-        float T1 = _SQRT3 * _sin(sector * _PI_3 - angle_el) * Uq / motor->Driver.voltage_limit;
-        float T2 = _SQRT3 * _sin(angle_el - (sector - 1.0f) * _PI_3) * Uq / motor->Driver.voltage_limit;
-        // two versions possible
-        float T0 = 0; // pulled to 0 - better for low power supply voltage
-        if (centered)
-        {
-            T0 = 1 - T1 - T2; // centered around driver->voltage_limit/2
-        }
-
-        // calculate the duty cycles(times)
-        float Ta, Tb, Tc;
-        switch (sector)
-        {
-        case 1:
-            Ta = T1 + T2 + T0 / 2;
-            Tb = T2 + T0 / 2;
-            Tc = T0 / 2;
-            break;
-        case 2:
-            Ta = T1 + T0 / 2;
-            Tb = T1 + T2 + T0 / 2;
-            Tc = T0 / 2;
-            break;
-        case 3:
-            Ta = T0 / 2;
-            Tb = T1 + T2 + T0 / 2;
-            Tc = T2 + T0 / 2;
-            break;
-        case 4:
-            Ta = T0 / 2;
-            Tb = T1 + T0 / 2;
-            Tc = T1 + T2 + T0 / 2;
-            break;
-        case 5:
-            Ta = T2 + T0 / 2;
-            Tb = T0 / 2;
-            Tc = T1 + T2 + T0 / 2;
-            break;
-        case 6:
-            Ta = T1 + T2 + T0 / 2;
-            Tb = T0 / 2;
-            Tc = T1 + T0 / 2;
-            break;
-        default:
-            // possible error state
-            Ta = 0;
-            Tb = 0;
-            Tc = 0;
-        }
-
-        // calculate the phase voltages and center
-        motor->Ua = Ta * motor->Driver.voltage_limit;
-        motor->Ub = Tb * motor->Driver.voltage_limit;
-        motor->Uc = Tc * motor->Driver.voltage_limit;
-        break;
-    }
-
-    BLDCDriver6PWM_setPwm(&motor->Driver, motor->Ua, motor->Ub, motor->Uc);
-}
 
 void BLDCMotor_setPhaseVoltage(BLDCMotor_t *motor, float Uq, float Ud, float electrical_angle)
 {
@@ -384,402 +111,6 @@ void BLDCMotor_SVPWM(BLDCMotor_t *motor, float Uq, float Ud, float electrical_an
         }
     }
     BLDCDriver_SVPWM(&motor->Driver, Uq, Ud, electrical_angle);
-}
-void BLDCMotor_setPhaseVoltage_v1(BLDCMotor_t *motor, float Uq, float Ud, float angle_el)
-{
-    if (!motor || !motor->driver)
-    {
-        PRINT_ERROR("setPhaseVoltage---motor or driver problem");
-        return;
-    }
-
-    // Check if this is a 6PWM driver by checking function pointer
-    // For 6PWM drivers, we can use centered modulation more effectively
-    const int centered = 1;
-    int sector;
-    float _ca, _sa;
-
-    switch (motor->foc_motor.foc_modulation)
-    {
-    case FOCModulationType_Trapezoid_120:
-        // see https://www.youtube.com/watch?v=InzXA7mWBWE Slide 5
-        {
-            static int trap_120_map[6][3] = {
-                {0, 1, -1}, {-1, 1, 0}, {-1, 0, 1}, {0, -1, 1},
-                {1, -1, 0}, {1, 0, -1} // each is 60 degrees with values for 3 phases
-                                       // of 1=positive -1=negative 0=high-z
-            };
-            // static int trap_120_state = 0;
-            sector = (int)(6 * (_normalizeAngle(angle_el + _PI / 6.0f + motor->foc_motor.zero_electric_angle) / _2PI)); // adding PI/6 to align with other modes
-
-            motor->Ua = Uq + trap_120_map[sector][0] * Uq;
-            motor->Ub = Uq + trap_120_map[sector][1] * Uq;
-            motor->Uc = Uq + trap_120_map[sector][2] * Uq;
-
-            if (centered)
-            {
-                motor->Ua += (motor->driver->voltage_limit) / 2 - Uq;
-                motor->Ub += (motor->driver->voltage_limit) / 2 - Uq;
-                motor->Uc += (motor->driver->voltage_limit) / 2 - Uq;
-            }
-        }
-        break;
-
-    case FOCModulationType_Trapezoid_150:
-        // see https://www.youtube.com/watch?v=InzXA7mWBWE Slide 8
-        {
-            static int trap_150_map[12][3] = {
-                {0, 1, -1}, {-1, 1, -1}, {-1, 1, 0},  {-1, 1, 1}, {-1, 0, 1}, {-1, -1, 1}, {0, -1, 1},
-                {1, -1, 1}, {1, -1, 0},  {1, -1, -1}, {1, 0, -1}, {1, 1, -1} // each is 30 degrees with values for 3 phases
-                                                                             // of 1=positive -1=negative 0=high-z
-            };
-            // static int trap_150_state = 0;
-            sector = (int)(12 * (_normalizeAngle(angle_el + _PI / 6.0f + motor->foc_motor.zero_electric_angle) / _2PI)); // adding PI/6 to align with other modes
-
-            motor->Ua = Uq + trap_150_map[sector][0] * Uq;
-            motor->Ub = Uq + trap_150_map[sector][1] * Uq;
-            motor->Uc = Uq + trap_150_map[sector][2] * Uq;
-
-            // center
-            if (centered)
-            {
-                motor->Ua += (motor->driver->voltage_limit) / 2 - Uq;
-                motor->Ub += (motor->driver->voltage_limit) / 2 - Uq;
-                motor->Uc += (motor->driver->voltage_limit) / 2 - Uq;
-            }
-        }
-        break;
-
-    case FOCModulationType_SinePWM:
-        // Sinusoidal PWM modulation
-        // Inverse Park + Clarke transformation
-
-        // angle normalization in between 0 and 2pi
-        // only necessary if using _sin and _cos - approximation functions
-        angle_el = _normalizeAngle(angle_el + motor->foc_motor.zero_electric_angle);
-        _ca = _cos(angle_el);
-        _sa = _sin(angle_el);
-        // Inverse park transform
-        motor->Ualpha = _ca * Ud - _sa * Uq; // -sin(angle) * Uq;
-        motor->Ubeta = _sa * Ud + _ca * Uq;  //  cos(angle) * Uq;
-
-        // Clarke transform
-        // Check if using 6PWM driver - can handle bipolar voltages better
-        // For 6PWM, we can center around 0V instead of VCC/2
-        motor->Ua = motor->Ualpha;
-        motor->Ub = -0.5f * motor->Ualpha + _SQRT3_2 * motor->Ubeta;
-        motor->Uc = -0.5f * motor->Ualpha - _SQRT3_2 * motor->Ubeta;
-
-        // For compatibility with 3PWM drivers, add offset if needed
-        if (centered)
-        {
-            motor->Ua += motor->driver->voltage_limit / 2;
-            motor->Ub += motor->driver->voltage_limit / 2;
-            motor->Uc += motor->driver->voltage_limit / 2;
-        }
-
-        if (!centered)
-        {
-            float Umin = fminf(motor->Ua, fminf(motor->Ub, motor->Uc));
-            motor->Ua -= Umin;
-            motor->Ub -= Umin;
-            motor->Uc -= Umin;
-        }
-
-        // printf("it's in setPhaseVoltage\n");
-        break;
-
-    case FOCModulationType_SpaceVectorPWM:
-        // Nice video explaining the SpaceVectorModulation (SVPWM) algorithm
-        // https://www.youtube.com/watch?v=QMSWUMEAejg
-
-        // if negative voltages change inverse the phase
-        // angle + 180degrees
-        if (Uq < 0)
-            angle_el += _PI;
-        Uq = fabsf(Uq);
-
-        // angle normalisation in between 0 and 2pi
-        // only necessary if using _sin and _cos - approximation functions
-        angle_el = _normalizeAngle(angle_el + motor->foc_motor.zero_electric_angle + _PI_2);
-
-        // find the sector we are in currently
-        sector = (int)floorf(angle_el / _PI_3) + 1;
-        // calculate the duty cycles
-        float T1 = _SQRT3 * _sin(sector * _PI_3 - angle_el) * Uq / motor->driver->voltage_limit;
-        float T2 = _SQRT3 * _sin(angle_el - (sector - 1.0f) * _PI_3) * Uq / motor->driver->voltage_limit;
-        // two versions possible
-        float T0 = 0; // pulled to 0 - better for low power supply voltage
-        if (centered)
-        {
-            T0 = 1 - T1 - T2; // centered around driver->voltage_limit/2
-        }
-
-        // calculate the duty cycles(times)
-        float Ta, Tb, Tc;
-        switch (sector)
-        {
-        case 1:
-            Ta = T1 + T2 + T0 / 2;
-            Tb = T2 + T0 / 2;
-            Tc = T0 / 2;
-            break;
-        case 2:
-            Ta = T1 + T0 / 2;
-            Tb = T1 + T2 + T0 / 2;
-            Tc = T0 / 2;
-            break;
-        case 3:
-            Ta = T0 / 2;
-            Tb = T1 + T2 + T0 / 2;
-            Tc = T2 + T0 / 2;
-            break;
-        case 4:
-            Ta = T0 / 2;
-            Tb = T1 + T0 / 2;
-            Tc = T1 + T2 + T0 / 2;
-            break;
-        case 5:
-            Ta = T2 + T0 / 2;
-            Tb = T0 / 2;
-            Tc = T1 + T2 + T0 / 2;
-            break;
-        case 6:
-            Ta = T1 + T2 + T0 / 2;
-            Tb = T0 / 2;
-            Tc = T1 + T0 / 2;
-            break;
-        default:
-            // possible error state
-            Ta = 0;
-            Tb = 0;
-            Tc = 0;
-        }
-
-        // calculate the phase voltages and center
-        motor->Ua = Ta * motor->driver->voltage_limit;
-        motor->Ub = Tb * motor->driver->voltage_limit;
-        motor->Uc = Tc * motor->driver->voltage_limit;
-        break;
-    }
-
-    // set the voltages in driver
-    // Use the driver's function pointer table for flexibility (3PWM, 6PWM, etc.)
-    // if (motor->driver && motor->driver->functions && motor->driver->functions->setPwm)
-    // {
-    //     motor->driver->functions->setPwm(motor->driver, motor->Ua, motor->Ub, motor->Uc);
-    // }
-    // printf("set v = %f,%f,%f\n", motor->Ua, motor->Ub, motor->Uc);
-    BLDCDriver6PWM_setPwm(motor->driver, motor->Ua, motor->Ub, motor->Uc);
-}
-void BLDCMotor_setPhaseVoltage_v0(BLDCMotor_t *motor, float Uq, float Ud, float angle_el)
-{
-    if (!motor || !motor->driver)
-        return;
-
-    // Check if this is a 6PWM driver by checking function pointer
-    // For 6PWM drivers, we can use centered modulation more effectively
-    const int centered = 1;
-    int sector;
-    float _ca, _sa;
-
-    switch (motor->FOCMotor->foc_modulation)
-    {
-    case FOCModulationType_Trapezoid_120:
-        // see https://www.youtube.com/watch?v=InzXA7mWBWE Slide 5
-        {
-            static int trap_120_map[6][3] = {
-                {0, 1, -1}, {-1, 1, 0}, {-1, 0, 1}, {0, -1, 1},
-                {1, -1, 0}, {1, 0, -1} // each is 60 degrees with values for 3 phases
-                                       // of 1=positive -1=negative 0=high-z
-            };
-            // static int trap_120_state = 0;
-            sector = (int)(6 * (_normalizeAngle(angle_el + _PI / 6.0f + motor->FOCMotor->zero_electric_angle) / _2PI)); // adding PI/6 to align with other modes
-
-            motor->Ua = Uq + trap_120_map[sector][0] * Uq;
-            motor->Ub = Uq + trap_120_map[sector][1] * Uq;
-            motor->Uc = Uq + trap_120_map[sector][2] * Uq;
-
-            if (centered)
-            {
-                motor->Ua += (motor->driver->voltage_limit) / 2 - Uq;
-                motor->Ub += (motor->driver->voltage_limit) / 2 - Uq;
-                motor->Uc += (motor->driver->voltage_limit) / 2 - Uq;
-            }
-        }
-        break;
-
-    case FOCModulationType_Trapezoid_150:
-        // see https://www.youtube.com/watch?v=InzXA7mWBWE Slide 8
-        {
-            static int trap_150_map[12][3] = {
-                {0, 1, -1}, {-1, 1, -1}, {-1, 1, 0},  {-1, 1, 1}, {-1, 0, 1}, {-1, -1, 1}, {0, -1, 1},
-                {1, -1, 1}, {1, -1, 0},  {1, -1, -1}, {1, 0, -1}, {1, 1, -1} // each is 30 degrees with values for 3 phases
-                                                                             // of 1=positive -1=negative 0=high-z
-            };
-            // static int trap_150_state = 0;
-            sector = (int)(12 * (_normalizeAngle(angle_el + _PI / 6.0f + motor->FOCMotor->zero_electric_angle) / _2PI)); // adding PI/6 to align with other modes
-
-            motor->Ua = Uq + trap_150_map[sector][0] * Uq;
-            motor->Ub = Uq + trap_150_map[sector][1] * Uq;
-            motor->Uc = Uq + trap_150_map[sector][2] * Uq;
-
-            // center
-            if (centered)
-            {
-                motor->Ua += (motor->driver->voltage_limit) / 2 - Uq;
-                motor->Ub += (motor->driver->voltage_limit) / 2 - Uq;
-                motor->Uc += (motor->driver->voltage_limit) / 2 - Uq;
-            }
-        }
-        break;
-
-    case FOCModulationType_SinePWM:
-        // Sinusoidal PWM modulation
-        // Inverse Park + Clarke transformation
-
-        // angle normalization in between 0 and 2pi
-        // only necessary if using _sin and _cos - approximation functions
-        angle_el = _normalizeAngle(angle_el + motor->FOCMotor->zero_electric_angle);
-        _ca = _cos(angle_el);
-        _sa = _sin(angle_el);
-        // Inverse park transform
-        motor->Ualpha = _ca * Ud - _sa * Uq; // -sin(angle) * Uq;
-        motor->Ubeta = _sa * Ud + _ca * Uq;  //  cos(angle) * Uq;
-
-        // Clarke transform
-        // Check if using 6PWM driver - can handle bipolar voltages better
-        // For 6PWM, we can center around 0V instead of VCC/2
-        motor->Ua = motor->Ualpha;
-        motor->Ub = -0.5f * motor->Ualpha + _SQRT3_2 * motor->Ubeta;
-        motor->Uc = -0.5f * motor->Ualpha - _SQRT3_2 * motor->Ubeta;
-
-        // For compatibility with 3PWM drivers, add offset if needed
-        if (centered)
-        {
-            motor->Ua += motor->driver->voltage_limit / 2;
-            motor->Ub += motor->driver->voltage_limit / 2;
-            motor->Uc += motor->driver->voltage_limit / 2;
-        }
-
-        if (!centered)
-        {
-            float Umin = fminf(motor->Ua, fminf(motor->Ub, motor->Uc));
-            motor->Ua -= Umin;
-            motor->Ub -= Umin;
-            motor->Uc -= Umin;
-        }
-
-        // printf("it's in setPhaseVoltage\n");
-        break;
-
-    case FOCModulationType_SpaceVectorPWM:
-        // Nice video explaining the SpaceVectorModulation (SVPWM) algorithm
-        // https://www.youtube.com/watch?v=QMSWUMEAejg
-
-        // if negative voltages change inverse the phase
-        // angle + 180degrees
-        if (Uq < 0)
-            angle_el += _PI;
-        Uq = fabsf(Uq);
-
-        // angle normalisation in between 0 and 2pi
-        // only necessary if using _sin and _cos - approximation functions
-        angle_el = _normalizeAngle(angle_el + motor->FOCMotor->zero_electric_angle + _PI_2);
-
-        // find the sector we are in currently
-        sector = (int)floorf(angle_el / _PI_3) + 1;
-        // calculate the duty cycles
-        float T1 = _SQRT3 * _sin(sector * _PI_3 - angle_el) * Uq / motor->driver->voltage_limit;
-        float T2 = _SQRT3 * _sin(angle_el - (sector - 1.0f) * _PI_3) * Uq / motor->driver->voltage_limit;
-        // two versions possible
-        float T0 = 0; // pulled to 0 - better for low power supply voltage
-        if (centered)
-        {
-            T0 = 1 - T1 - T2; // centered around driver->voltage_limit/2
-        }
-
-        // calculate the duty cycles(times)
-        float Ta, Tb, Tc;
-        switch (sector)
-        {
-        case 1:
-            Ta = T1 + T2 + T0 / 2;
-            Tb = T2 + T0 / 2;
-            Tc = T0 / 2;
-            break;
-        case 2:
-            Ta = T1 + T0 / 2;
-            Tb = T1 + T2 + T0 / 2;
-            Tc = T0 / 2;
-            break;
-        case 3:
-            Ta = T0 / 2;
-            Tb = T1 + T2 + T0 / 2;
-            Tc = T2 + T0 / 2;
-            break;
-        case 4:
-            Ta = T0 / 2;
-            Tb = T1 + T0 / 2;
-            Tc = T1 + T2 + T0 / 2;
-            break;
-        case 5:
-            Ta = T2 + T0 / 2;
-            Tb = T0 / 2;
-            Tc = T1 + T2 + T0 / 2;
-            break;
-        case 6:
-            Ta = T1 + T2 + T0 / 2;
-            Tb = T0 / 2;
-            Tc = T1 + T0 / 2;
-            break;
-        default:
-            // possible error state
-            Ta = 0;
-            Tb = 0;
-            Tc = 0;
-        }
-
-        // calculate the phase voltages and center
-        motor->Ua = Ta * motor->driver->voltage_limit;
-        motor->Ub = Tb * motor->driver->voltage_limit;
-        motor->Uc = Tc * motor->driver->voltage_limit;
-        break;
-    }
-
-    // set the voltages in driver
-    // Use the driver's function pointer table for flexibility (3PWM, 6PWM, etc.)
-    // if (motor->driver && motor->driver->functions && motor->driver->functions->setPwm)
-    // {
-    //     motor->driver->functions->setPwm(motor->driver, motor->Ua, motor->Ub, motor->Uc);
-    // }
-    // printf("ua = %f, ub = %f, uc = %f\n", motor->Ua, motor->Ub, motor->Uc);
-    BLDCDriver6PWM_setPwm(motor->driver, motor->Ua, motor->Ub, motor->Uc);
-}
-
-void BLDCMotor_init_v0(BLDCMotor_t *motor, int pp)
-{
-    if (!motor)
-        return;
-
-    // Initialize base FOCMotor
-    FOCMotor_init(&motor->foc_motor);
-
-    // save pole pairs number
-    motor->foc_motor.pole_pairs = pp;
-
-    // Initialize phase voltages
-    motor->Ua = 0;
-    motor->Ub = 0;
-    motor->Uc = 0;
-    motor->Ualpha = 0;
-    motor->Ubeta = 0;
-
-    // Initialize driver pointer
-    motor->driver = NULL;
-
-    // Initialize open loop timestamp
-    motor->open_loop_timestamp = 0;
 }
 
 void BLDCMotor_initAll(BLDCMotor_t *motor, int pp, EncoderType_enum encoderType, ControlType_t controllerType)
@@ -953,7 +284,9 @@ void BLDCMotor_initPID_CurrentVelocityAngle(BLDCMotor_t *motor, int pp, EncoderT
     motor->foc_motor.pole_pairs = pp;
     motor->foc_motor.controller = controllerType;
     // motor->foc_motor.foc_modulation = FOCModulationType_SinePWM;
-    motor->foc_motor.foc_modulation = FOCModulationType_SpaceVectorPWM;
+    // motor->foc_motor.foc_modulation = FOCModulationType_SpaceVectorPWM;
+    motor->Driver.FOCModulationType = FOCModulationType_SinePWM;
+    // motor->Driver.FOCModulationType = FOCModulationType_SpaceVectorPWM;
     FOCMotor_init(&motor->foc_motor);
 
 
@@ -975,15 +308,20 @@ void BLDCMotor_initPID_CurrentVelocityAngle(BLDCMotor_t *motor, int pp, EncoderT
     // BLDCDriverPWM_enable(&motor->Driver);
     BLDCMotor_alignSensor(motor);
 
-    PIDController_init(&motor->PID_id, pid_id.P,pid_id.I,pid_id.D,5,8.0f);
+    PIDController_init(&motor->PID_id, pid_id.P,pid_id.I,pid_id.D,5,6.8f);
     PIDController_init(&motor->PID_iq,pid_iq.P,pid_iq.I,pid_iq.D,5,6.8f);
-    PIDController_init(&motor->PID_velocity,pid_velocity.P,pid_velocity.I,pid_velocity.D,100,8.0f);
-    PIDController_init(&motor->PID_degree,pid_degree.P,pid_degree.I,pid_degree.D,100,14.0f);
-    LowPassFilter_init(&motor->lpf_id, 0.001);
-    LowPassFilter_init(&motor->lpf_iq, 0.001);
-    LowPassFilter_init(&motor->lpf_ia, 0.001);
-    LowPassFilter_init(&motor->lpf_ib, 0.001);
-    LowPassFilter_init(&motor->lpf_velocity, 0.1);
+    if (controllerType == ControlType_velocityClosedLoop) {
+        PIDController_init(&motor->PID_velocity,pid_velocity.P,pid_velocity.I,pid_velocity.D,100,6.8f);
+    }
+    else {
+        PIDController_init(&motor->PID_velocity,pid_velocity.P,pid_velocity.I,pid_velocity.D,100,1.0f);
+    }
+    PIDController_init(&motor->PID_degree,pid_degree.P,pid_degree.I,pid_degree.D,100,360.0f*10);
+    LowPassFilter_init(&motor->lpf_id, CONFIG_FILTER_Tf);
+    LowPassFilter_init(&motor->lpf_iq, CONFIG_FILTER_Tf);
+    LowPassFilter_init(&motor->lpf_ia, CONFIG_FILTER_Tf);
+    LowPassFilter_init(&motor->lpf_ib, CONFIG_FILTER_Tf);
+    LowPassFilter_init(&motor->lpf_velocity, CONFIG_FILTER_Tf);
     LowPassFilter_init(&motor->lpf_degree, 0.1);
 
     const float cutoff_freq = 50;
@@ -1007,6 +345,10 @@ void BLDCMotor_initPID_CurrentVelocityAngle_Inline(BLDCMotor_t *motor, int pp, E
     // BLDCMotor_enable(motor);
     // CurrentSense_InitADC(&motor->CurrentSense);
 
+    printf("is calibration..\n");
+    motor->currentSense = &currentSense;
+    CurrentSense_InitADC_Regular(motor->currentSense);
+
     // Initialize open loop timestamp
     motor->open_loop_timestamp = 0;
     motor->angle = 0;
@@ -1016,6 +358,7 @@ void BLDCMotor_initPID_CurrentVelocityAngle_Inline(BLDCMotor_t *motor, int pp, E
     motor->foc_motor.controller = controllerType;
     motor->Driver.FOCModulationType = FOCModulationType_SinePWM;
     // motor->Driver.FOCModulationType = FOCModulationType_SpaceVectorPWM;
+
     FOCMotor_init(&motor->foc_motor);
 
 
@@ -1026,9 +369,6 @@ void BLDCMotor_initPID_CurrentVelocityAngle_Inline(BLDCMotor_t *motor, int pp, E
     BLDCDriver_init(&motor->Driver, CONFIG_PWM_HZ, CONFIG_PWM_RESOLUTION, CONFIG_VoltageSupply, CONFIG_VoltageLimit);
     BLDCMotor_enable(motor);
 
-    printf("is calibration..\n");
-    motor->currentSense = &currentSense;
-    CurrentSense_InitADC_Regular(motor->currentSense);
 
     // save pole pairs number
 
@@ -1237,7 +577,7 @@ float BLDCMotor_getCurrentDQ_noFilter(BLDCMotor_t *motor)
     motor->currentSense->i_q = i_q;
     return 0;
 }
-float BLDCMotor_getCurrentDQ(BLDCMotor_t *motor)
+float BLDCMotor_getCurrentDQ_Polling(BLDCMotor_t *motor)
 {
 
     // float i_a, i_b, i_alpha, i_beta, i_q, i_d;
@@ -1258,7 +598,7 @@ float BLDCMotor_getCurrentDQ(BLDCMotor_t *motor)
     // motor->currentSense->i_b =LowPassFilter(&motor->lpf_ib, motor->currentSense->i_b);
     // if (!motor->currentSense->isSetIc) {
         motor->currentSense->i_alpha = motor->currentSense->i_a;
-        motor->currentSense->i_beta = _1_SQRT3*motor->currentSense->i_a + _2_SQRT3 *currentSense.i_b;
+        motor->currentSense->i_beta = _1_SQRT3*motor->currentSense->i_a + _2_SQRT3 *motor->currentSense->i_b;
     // }
     // else {
     //     float mid = (1.f/3)*(motor->currentSense->i_a + motor->currentSense->i_b + motor->currentSense->i_c);
@@ -1278,6 +618,42 @@ float BLDCMotor_getCurrentDQ(BLDCMotor_t *motor)
     motor->currentSense->i_q = lpf_process(&motor->lpf_iq0, motor->currentSense->i_q);
     // motor->currentSense->i_d =LowPassFilter(&motor->lpf_id, motor->currentSense->i_d);
     // motor->currentSense->i_q =LowPassFilter(&motor->lpf_iq, motor->currentSense->i_q);
+    motor->CurrentSense.i_a = motor->currentSense->i_a;
+    motor->CurrentSense.i_b = motor->currentSense->i_b;
+    motor->CurrentSense.i_alpha = motor->currentSense->i_alpha;
+    motor->CurrentSense.i_beta = motor->currentSense->i_beta;
+    motor->CurrentSense.i_d = motor->currentSense->i_d;
+    motor->CurrentSense.i_q = motor->currentSense->i_q;
+    return 0;
+}
+float BLDCMotor_getCurrentDQ(BLDCMotor_t *motor)
+{
+
+
+    // motor->currentSense->i_a = lpf_process(&motor->lpf_ia0, motor->currentSense->i_a);
+    // motor->currentSense->i_b = lpf_process(&motor->lpf_ib0, motor->currentSense->i_b);
+    motor->currentSense->i_a =LowPassFilter(&motor->lpf_ia, motor->currentSense->i_a);
+    motor->currentSense->i_b =LowPassFilter(&motor->lpf_ib, motor->currentSense->i_b);
+    motor->currentSense->i_alpha = motor->currentSense->i_a;
+    motor->currentSense->i_beta = _1_SQRT3*motor->currentSense->i_a + _2_SQRT3 *motor->currentSense->i_b;
+
+    float _cos_e = _cos(motor->e_angle);
+    float _sin_e = _sin(motor->e_angle);
+    float i_alpha = motor->currentSense->i_alpha;
+    float i_beta = motor->currentSense->i_beta;
+
+    motor->currentSense->i_d = i_alpha * _cos_e + i_beta * _sin_e;
+    motor->currentSense->i_q = -i_alpha * _sin_e + i_beta * _cos_e;
+    // motor->currentSense->i_d = lpf_process(&motor->lpf_id0, motor->currentSense->i_d);
+    // motor->currentSense->i_q = lpf_process(&motor->lpf_iq0, motor->currentSense->i_q);
+    motor->currentSense->i_d =LowPassFilter(&motor->lpf_id, motor->currentSense->i_d);
+    motor->currentSense->i_q =LowPassFilter(&motor->lpf_iq, motor->currentSense->i_q);
+    motor->CurrentSense.i_a = motor->currentSense->i_a;
+    motor->CurrentSense.i_b = motor->currentSense->i_b;
+    motor->CurrentSense.i_alpha = motor->currentSense->i_alpha;
+    motor->CurrentSense.i_beta = motor->currentSense->i_beta;
+    motor->CurrentSense.i_d = motor->currentSense->i_d;
+    motor->CurrentSense.i_q = motor->currentSense->i_q;
     return 0;
 }
 
@@ -1625,6 +1001,7 @@ int BLDCMotor_alignSensor(BLDCMotor_t *motor)
         float angle = _3PI_2 + _2PI * i / (resolution+1);
         // angle = _normalizeAngle(angle-motor->foc_motor.zero_electric_angle);
         angle = _normalizeAngle(angle);
+        // BLDCMotor_setPhaseVoltage(motor,  motor->foc_motor.voltage_sensor_align,0, target_electrical_angle);
         BLDCMotor_SVPWM(motor, motor->foc_motor.voltage_sensor_align, 0, angle);
         // BLDCMotor_SVPWM(motor, 0, motor->foc_motor.voltage_sensor_align, angle);
         _delay(delay_t);
@@ -1637,6 +1014,7 @@ int BLDCMotor_alignSensor(BLDCMotor_t *motor)
     {
         float angle = _3PI_2 + _2PI *(resolution - i) / (resolution+1);
         angle = _normalizeAngle(angle);
+        // BLDCMotor_setPhaseVoltage(motor,  motor->foc_motor.voltage_sensor_align,0, target_electrical_angle);
         BLDCMotor_SVPWM(motor, motor->foc_motor.voltage_sensor_align, 0, angle);
         // BLDCMotor_SVPWM(motor, 0, motor->foc_motor.voltage_sensor_align, angle);
         _delay(delay_t);
@@ -1716,7 +1094,12 @@ void BLDCMotor_move(BLDCMotor_t *motor, float new_target)
         BLDCMotor_angleClosedLoop(motor, new_target);
         break;
     case ControlType_velocity:
-        BLDCMotor_velocityClosedLoop_without_i(motor, new_target);
+        // BLDCMotor_velocityClosedLoop_without_i(motor, new_target);
+        BLDCMotor_velocityClosedLoop(motor,new_target);
+        break;
+    case ControlType_velocityClosedLoopInline:
+        // BLDCMotor_velocityClosedLoop_without_i(motor, new_target);
+        BLDCMotor_velocityClosedLoopInline(motor,new_target);
         break;
     case ControlType_velocity_openloop:
         BLDCMotor_velocityOpenloop(motor, new_target);
@@ -1810,30 +1193,41 @@ void BLDCMotor_currentVelocityOpenloop(BLDCMotor_t *motor, float target_velocity
     if (!motor)
         return;
     // get current timestamp
-    while (!motor->currentSense->isReady);
-    // if (motor->currentSense->isReady)
+    // while (!motor->currentSense->isReady);
+    if (motor->currentSense->isReady)
     {
-        unsigned long now_us = getUs();
+        // uint32_t now_us = getUs();
+        uint32_t now_us = HAL_GetTickUs();
         // calculate the sample time from last call
-        float Ts_us =(float)(now_us - motor->open_loop_timestamp) ;
-        float Ts = Ts_us * 1e-6f;
+        // float Ts_us =(float)(now_us - motor->open_loop_timestamp) ;
+        uint32_t Ts_us =  (now_us - motor->open_loop_timestamp) ;
+        // if (Ts_us > 10000) {
+        //     Ts_us = 10000;
+        // }
+        motor->delta_us = Ts_us;
+        float Ts = (float)Ts_us * 1e-6f;
 
         float velocity_radian = target_velocity * _2PI;
         float angle = _normalizeAngle(motor->angle + velocity_radian* Ts);
+        // float angle = (motor->angle + velocity_radian* Ts);
         motor->angle = angle;
         float e_angle = _normalizeAngle(_electricalAngle(angle, motor->foc_motor.pole_pairs));
         // float e_angle = _electricalAngle_calibrated(motor->direction, motor->angle, motor->foc_motor.pole_pairs, motor->foc_motor.zero_electric_angle);
         motor->e_angle = e_angle;
+        // BLDCMotor_getCurrentDQ(motor);
         // BLDCMotor_setPhaseVoltage(motor, motor->foc_motor.voltage_limit, 0, e_angle);
-        BLDCMotor_SVPWM(motor, 2, 0, e_angle);
-        // BLDCMotor_setPhaseVoltage(motor, 0.5, 0, e_angle);
+        // BLDCMotor_SVPWM(motor, 3.0f, 0, e_angle);
+        BLDCMotor_setPhaseVoltage(motor, 3, 0, e_angle);
+
         motor->open_loop_timestamp = now_us;
-        // UART_SendFloat(1, Ts_us);
         motor->currentSense->isReady = false;
     }
 }
 float now_e_angle = _PI_2*0.5;
 float last_e_angle;
+struct g_I {
+    float a,b,c,alpha,beta,d,q;
+}g_I;
 void BLDCMotor_currentVelocityOpenloopInline(BLDCMotor_t *motor, float target_velocity)
 {
     if (!motor)
@@ -1882,13 +1276,18 @@ void BLDCMotor_currentVelocityOpenloopInline(BLDCMotor_t *motor, float target_ve
         // float e_angle = _electricalAngle_calibrated(motor->direction, motor->angle, motor->foc_motor.pole_pairs, motor->foc_motor.zero_electric_angle);
         motor->e_angle = e_angle;
 
+        // currentSense_pollingGetCurrent(motor->currentSense);
         BLDCMotor_getCurrentDQ(motor);
+        // motor->currentSense->i_a = lpf_process(&motor->lpf_ia0, motor->currentSense->i_a);
+        // motor->currentSense->i_b = lpf_process(&motor->lpf_ib0, motor->currentSense->i_b);
+
         motor->CurrentSense.i_a = motor->currentSense->i_a;
         motor->CurrentSense.i_b = motor->currentSense->i_b;
         motor->CurrentSense.i_alpha = motor->currentSense->i_alpha;
         motor->CurrentSense.i_beta = motor->currentSense->i_beta;
         motor->CurrentSense.i_d = motor->currentSense->i_d;
         motor->CurrentSense.i_q = motor->currentSense->i_q;
+
 
         // BLDCMotor_SVPWM(motor, motor->foc_motor.voltage_limit/2, 0, e_angle);
         // BLDCMotor_SVPWM(motor, 0, motor->foc_motor.voltage_limit/2, e_angle);
@@ -1902,26 +1301,43 @@ void BLDCMotor_currentVelocityOpenloopInline(BLDCMotor_t *motor, float target_ve
 int isFirst = 1;
 int BLDCMotor_velocityClosedLoop(BLDCMotor_t *motor, float target)
 {
-    motor->velocity = BLDCMotor_getVelocity(motor);
-    motor->angle = BLDCMotor_getAngle(motor);
-    // motor->angle = motor->encoder.as5600_Instance.angle;
+    if (motor->currentSense->isReady) {
 
-    // float e_angle = _normalizeAngle(MOTOR_DIRECTION*_electricalAngle(motor->angle, motor->foc_motor.pole_pairs) + motor->foc_motor.zero_electric_angle);
-    //1.
-    // float electrical_angle = _electricalAngle((float)motor->direction * motor->angle, motor->foc_motor.pole_pairs);
-    //2.
+    motor->velocity = BLDCMotor_getVelocity(motor);
+    motor->velocity = motor->velocity > 20 ? 20 : motor->velocity;
+    motor->velocity = motor->velocity < -20 ? -20 : motor->velocity;
+
+    motor->velocity =LowPassFilter(&motor->lpf_velocity,motor->velocity);
+        // motor->velocity =lpf_process(&motor->filter_velocity,motor->velocity);
+
+    motor->angle = motor->foc_motor.Encoder.angle;
+
     float e_angle = _electricalAngle_calibrated(motor->direction, motor->angle, motor->foc_motor.pole_pairs, motor->foc_motor.zero_electric_angle);
     motor->e_angle = e_angle;
-    motor->foc_motor.voltage_q = PIDController_update(&motor->PID, target - motor->velocity);
+    // BLDCMotor_getCurrentDQ(motor);
+    // motor->velocity =lpf_process(&motor->filter_velocity, motor->velocity);
+
+    motor->foc_motor.voltage_q = PIDController_update(&motor->PID_velocity, target - motor->velocity);
+    BLDCMotor_setPhaseVoltage(motor, motor->foc_motor.voltage_q, 0,(e_angle));
+    // BLDCMotor_SVPWM(motor, motor->foc_motor.voltage_q, 0, e_angle);
+    }
+    return 0;
+}
+int BLDCMotor_velocityClosedLoopInline(BLDCMotor_t *motor, float target)
+{
+    motor->velocity = BLDCMotor_getVelocity(motor);
+    // if (motor->velocity < 1) {
+    //     UART_SendFloat(2, motor->velocity, (float)motor->foc_motor.Encoder.mt6835.delta_t_us);
+    // }
+    motor->angle = motor->foc_motor.Encoder.angle;
+
+    float e_angle = _electricalAngle_calibrated(motor->direction, motor->angle, motor->foc_motor.pole_pairs, motor->foc_motor.zero_electric_angle);
+    motor->e_angle = e_angle;
+    BLDCMotor_getCurrentDQ(motor);
+
+    motor->foc_motor.voltage_q = PIDController_update(&motor->PID_velocity, target - motor->velocity);
     // BLDCMotor_setPhaseVoltage(motor, motor->foc_motor.voltage_q, 0,(e_angle));
     BLDCMotor_SVPWM(motor, motor->foc_motor.voltage_q, 0, e_angle);
-    // if (isFirst++ < 15)
-    // {
-    //
-    //     printf("velocity = %f, angle = %f, vq = %f, vd = %f\n", motor->velocity, motor->angle, motor->foc_motor.voltage_q, motor->foc_motor.voltage_d);
-    //     printf("e_angle = %f, Ua: %f, Ub: %f, Uc: %f\n\n", motor->e_angle, motor->Ua, motor->Ub, motor->Uc);
-    //
-    // }
     return 0;
 }
 
@@ -2123,28 +1539,40 @@ int BLDCMotor_currentClosedLoopBandwith(BLDCMotor_t *motor, float target)
     // if (MultiRate_Controller.current_enable)
     // int t0 = getUs();
     //1.
-    while (!motor->currentSense->isReady){};
+    // while (!motor->currentSense->isReady){};
     //2.
-    // if (motor->currentSense->isReady)
+    if (motor->currentSense->isReady)
     {
+        motor->currentSense->isReady = false;
         motor->velocity = BLDCMotor_getVelocity(motor);
+        motor->velocity = LowPassFilter(&motor->lpf_velocity, motor->velocity);
         motor->angle = motor->foc_motor.Encoder.angle;
 
+        // BLDCMotor_getCurrentDQ(motor);
         float e_angle = _electricalAngle_calibrated(motor->direction, motor->angle, motor->foc_motor.pole_pairs, motor->foc_motor.zero_electric_angle);
         motor->e_angle = e_angle;
-        motor->CurrentSense.i_d = motor->currentSense->i_d;
-        motor->CurrentSense.i_q = motor->currentSense->i_q;
+        // motor->CurrentSense.i_d = motor->currentSense->i_d;
+        // motor->CurrentSense.i_q = motor->currentSense->i_q;
 
-        // motor->foc_motor.voltage_q = PIDController_update(&motor->PID_iq, target - motor->currentSense->i_q);
+        motor->foc_motor.voltage_q = PIDController_update(&motor->PID_iq, target - motor->currentSense->i_q);
         // motor->foc_motor.voltage_d = PIDController_update(&motor->PID_id, 0 - motor->currentSense->i_d);
-        // BLDCMotor_SVPWM(motor, motor->foc_motor.voltage_q, motor->foc_motor.voltage_d, e_angle);
+
+        motor->foc_motor.voltage_d = 0;
+
+        // BLDCMotor_setPhaseVoltage(motor, motor->foc_motor.voltage_q, motor->foc_motor.voltage_d, e_angle);
 
         //2.
-        motor->foc_motor.voltage_q = 1;
-        motor->foc_motor.voltage_d = PIDController_update(&motor->PID_id, 0 - motor->currentSense->i_d);
-        BLDCMotor_SVPWM(motor, motor->foc_motor.voltage_q, motor->foc_motor.voltage_d, e_angle);
+        // motor->foc_motor.voltage_q = 1;
+        // motor->foc_motor.voltage_d = PIDController_update(&motor->PID_id, 0 - motor->currentSense->i_d);
+        BLDCMotor_setPhaseVoltage(motor, motor->foc_motor.voltage_q, motor->foc_motor.voltage_d, e_angle);
 
-        motor->currentSense->isReady = false;
+        // BLDCMotor_SVPWM(motor, motor->foc_motor.voltage_q, motor->foc_motor.voltage_d, e_angle);
+        // const int counter = 10;
+        // static int i = 0;
+        // if ( i++ % counter == 0) {
+        //     UART_SendFloat(2, motor->currentSense->i_a,  motor->currentSense->i_b);
+        // }
+
     }
     // int t1 = getUs();
     // float delta_t = (float)(t1 - t0) / 1e3;
@@ -2161,38 +1589,41 @@ int BLDCMotor_currentClosedLoopBandwithInline(BLDCMotor_t *motor, float target)
         float e_angle = _electricalAngle_calibrated(motor->direction, motor->angle, motor->foc_motor.pole_pairs, motor->foc_motor.zero_electric_angle);
         motor->e_angle = e_angle;
 
-        // BLDCMotor_getCurrentDQ(motor);
+        BLDCMotor_getCurrentDQ(motor);
         //
         // motor->CurrentSense.i_a = motor->currentSense->i_a;
         // motor->CurrentSense.i_b = motor->currentSense->i_b;
         // motor->CurrentSense.i_d = motor->currentSense->i_d;
         // motor->CurrentSense.i_q = motor->currentSense->i_q;
 
-        currentSense_pollingGetCurrent(motor->currentSense);
-        motor->currentSense->i_a = lpf_process(&motor->lpf_ia0, motor->currentSense->i_a);
-        motor->currentSense->i_b = lpf_process(&motor->lpf_ib0, motor->currentSense->i_b);
-        Clark_Park_Transform(motor->currentSense->i_a, motor->currentSense->i_b,
-                             &motor->currentSense->i_d, &motor->currentSense->i_q,
-                             motor->e_angle);
-        motor->currentSense->i_d = lpf_process(&motor->lpf_id0, motor->currentSense->i_d);
-        motor->currentSense->i_q = lpf_process(&motor->lpf_iq0, motor->currentSense->i_q);
+        //1.
+        // currentSense_pollingGetCurrent(motor->currentSense);
+        // motor->currentSense->i_a = lpf_process(&motor->lpf_ia0, motor->currentSense->i_a);
+        // motor->currentSense->i_b = lpf_process(&motor->lpf_ib0, motor->currentSense->i_b);
+        // Clark_Park_Transform(motor->currentSense->i_a, motor->currentSense->i_b,
+        //                      &motor->currentSense->i_d, &motor->currentSense->i_q,
+        //                      motor->e_angle);
+        // motor->currentSense->i_d = lpf_process(&motor->lpf_id0, motor->currentSense->i_d);
+        // motor->currentSense->i_q = lpf_process(&motor->lpf_iq0, motor->currentSense->i_q);
 
         motor->CurrentSense.i_a = motor->currentSense->i_a;
         motor->CurrentSense.i_b = motor->currentSense->i_b;
         motor->CurrentSense.i_d = motor->currentSense->i_d;
         motor->CurrentSense.i_q = motor->currentSense->i_q;
 
+        //1.
         motor->foc_motor.voltage_q = PIDController_update(&motor->PID_iq, target - motor->currentSense->i_q);
-        motor->foc_motor.voltage_d = PIDController_update(&motor->PID_id, 0 - motor->currentSense->i_d);
-        // BLDCMotor_SVPWM(motor, motor->foc_motor.voltage_q, motor->foc_motor.voltage_d, e_angle);
-        BLDCMotor_setPhaseVoltage(motor, motor->foc_motor.voltage_q, motor->foc_motor.voltage_d, e_angle);
+        // motor->foc_motor.voltage_d = PIDController_update(&motor->PID_id, 0 - motor->currentSense->i_d);
+        motor->foc_motor.voltage_d = 0;
+        // BLDCMotor_setPhaseVoltage(motor, motor->foc_motor.voltage_q, motor->foc_motor.voltage_d, e_angle);
+        BLDCMotor_SVPWM(motor, motor->foc_motor.voltage_q, motor->foc_motor.voltage_d, e_angle);
 
         //2.
         // motor->foc_motor.voltage_q = 2;
         // motor->foc_motor.voltage_d = PIDController_update(&motor->PID_id, 0 - motor->currentSense->i_d);
         // BLDCMotor_setPhaseVoltage(motor, motor->foc_motor.voltage_q, motor->foc_motor.voltage_d, e_angle);
-        // BLDCMotor_SVPWM(motor, motor->foc_motor.voltage_q, motor->foc_motor.voltage_d, e_angle);
 
+        // BLDCMotor_SVPWM(motor, motor->foc_motor.voltage_q, motor->foc_motor.voltage_d, e_angle);
         motor->currentSense->isReady = false;
     }
     return 0;
@@ -2230,26 +1661,30 @@ int BLDCMotor_currentClosedLoopBandwith_debug(BLDCMotor_t *motor, float target)
 }
 int BLDCMotor_currentVelocityClosedLoopBandwith(BLDCMotor_t *motor, float target)
 {
-    while (!motor->currentSense->isReady){};
+    if (motor->currentSense->isReady)
     {
         static int velocityLoop_counter = 0;
         const int velocityLoop_period = 2;
         static float target_iq = 0;
-        float velocity = BLDCMotor_getVelocity(motor);
+        float velocity = BLDCMotor_getVelocity(motor)*360;
         motor->angle = motor->foc_motor.Encoder.angle;
 
         float e_angle = _electricalAngle_calibrated(motor->direction, motor->angle, motor->foc_motor.pole_pairs, motor->foc_motor.zero_electric_angle);
         motor->e_angle = e_angle;
         // motor->velocity =lpf_process(&motor->filter_velocity, velocity);
         motor->velocity =LowPassFilter(&motor->lpf_velocity, velocity);
+        // BLDCMotor_getCurrentDQ(motor);
 
         if (velocityLoop_counter++ % velocityLoop_period == 0)
         {
             target_iq = PIDController_update(&motor->PID_velocity, target - motor->velocity);
         }
         motor->foc_motor.voltage_q = PIDController_update(&motor->PID_iq, target_iq - motor->currentSense->i_q);
-        motor->foc_motor.voltage_d = PIDController_update(&motor->PID_id, 0 - motor->currentSense->i_d);
-        BLDCMotor_SVPWM(motor, motor->foc_motor.voltage_q, motor->foc_motor.voltage_d, e_angle);
+        // motor->foc_motor.voltage_d = PIDController_update(&motor->PID_id, 0 - motor->currentSense->i_d);
+        motor->foc_motor.voltage_d   = 0;
+        // BLDCMotor_SVPWM(motor, motor->foc_motor.voltage_q, motor->foc_motor.voltage_d, e_angle);
+        BLDCMotor_setPhaseVoltage(motor, motor->foc_motor.voltage_q, motor->foc_motor.voltage_d, e_angle);
+        motor->currentSense->isReady = false;
     }
     return 0;
 }
@@ -2286,18 +1721,20 @@ int BLDCMotor_currentVelocityRPMClosedLoopBandwith(BLDCMotor_t *motor, float tar
 int BLDCMotor_currentVelocityAngleClosedLoopBandwith(BLDCMotor_t *motor, float target)
 {
 
-    while (!motor->currentSense->isReady){};
+    // while (!motor->currentSense->isReady){};
+    if (motor->currentSense->isReady)
     {
         static int velocityLoop_counter = 0;
         const int velocityLoop_period = 2;
-        static int angleLoop_counter = 0;
+        static int angleLoo_counter = 0;
 
         static float target_iq = 0;
         static float target_velocity = 0;
-        float velocity = BLDCMotor_getVelocity(motor)*_2PI;
+        // float velocity = BLDCMotor_getVelocity(motor)*_2PI;
+        float velocity = BLDCMotor_getVelocity(motor)*360;
         motor->angle = motor->foc_motor.Encoder.angle;
-        // float degrees = motor->angle * 180 / _PI;
-        float degrees = motor->angle;
+        float degrees = motor->angle * 180 / _PI;
+        // float degrees = motor->angle;
         // float degrees = motor->angle / _2PI;
 
         float e_angle = _electricalAngle_calibrated(motor->direction, motor->angle, motor->foc_motor.pole_pairs, motor->foc_motor.zero_electric_angle);
@@ -2316,8 +1753,10 @@ int BLDCMotor_currentVelocityAngleClosedLoopBandwith(BLDCMotor_t *motor, float t
             target_iq = PIDController_update(&motor->PID_velocity, target_velocity - motor->velocity);
         }
         motor->foc_motor.voltage_q = PIDController_update(&motor->PID_iq, target_iq - motor->currentSense->i_q);
-        motor->foc_motor.voltage_d = PIDController_update(&motor->PID_id, 0 - motor->currentSense->i_d);
-        BLDCMotor_SVPWM(motor, motor->foc_motor.voltage_q, motor->foc_motor.voltage_d, e_angle);
+        // motor->foc_motor.voltage_d = PIDController_update(&motor->PID_id, 0 - motor->currentSense->i_d);
+        motor->foc_motor.voltage_d = 0;
+        // BLDCMotor_SVPWM(motor, motor->foc_motor.voltage_q, motor->foc_motor.voltage_d, e_angle);
+        BLDCMotor_setPhaseVoltage(motor, motor->foc_motor.voltage_q, motor->foc_motor.voltage_d, e_angle);
     }
     return 0;
 }
@@ -2462,6 +1901,16 @@ void BLDCMotor_ControlRunByKey(BLDCMotor_t *motor) {
     }
     else if (key_flag == 0) {
         motor->isEnable = 0;
+    }
+}
+void BLDCMotor_KeyControl(BLDCMotor_t *motor) {
+    if (g_keyFlag == 1) {
+        motor->isEnable = 1;
+        BLDCMotor_enable(motor);
+    }
+    else if (g_keyFlag == 0) {
+        motor->isEnable = 0;
+        BLDCMotor_disable(motor);
     }
 }
 void BLDCMotor_run(BLDCMotor_t *motor)

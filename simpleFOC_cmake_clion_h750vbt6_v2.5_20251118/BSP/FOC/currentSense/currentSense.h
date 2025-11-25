@@ -16,7 +16,7 @@ extern ADC_HandleTypeDef hadc3;
 #define currentSense_adc2 hadc2
 #define currentSense_adc3 hadc3
 
-#define R_SAMPLE 0.001 //0.02
+#define R_SAMPLE 0.01 //0.02
 #define GAIN 50       //6
 // ADC_HandleTypeDef adc1;
 // ADC_HandleTypeDef adc2;

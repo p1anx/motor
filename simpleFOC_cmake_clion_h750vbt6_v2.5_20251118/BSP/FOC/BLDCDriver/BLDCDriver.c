@@ -245,9 +245,9 @@ void BLDCDriver_write6PWM(float dc_a, float dc_b, float dc_c)
 {
 
     int pwm_range = pwm_tim.Instance->ARR;
-    __HAL_TIM_SET_COMPARE(&pwm_tim, TIM_CHANNEL_1, dc_a * pwm_range);
-    __HAL_TIM_SET_COMPARE(&pwm_tim, TIM_CHANNEL_2, dc_b * pwm_range);
-    __HAL_TIM_SET_COMPARE(&pwm_tim, TIM_CHANNEL_3, dc_c * pwm_range);
+    __HAL_TIM_SET_COMPARE(&pwm_tim, TIM_CHANNEL_1, (1-dc_a) * pwm_range);
+    __HAL_TIM_SET_COMPARE(&pwm_tim, TIM_CHANNEL_2, (1-dc_b) * pwm_range);
+    __HAL_TIM_SET_COMPARE(&pwm_tim, TIM_CHANNEL_3, (1-dc_c) * pwm_range);
 }
 void BLDCDriver_writePWM(float dc_a, float dc_b, float dc_c)
 {
