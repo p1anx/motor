@@ -20,7 +20,7 @@ extern  SPI_HandleTypeDef hspi1;
 #define  mt6835_spi hspi1
 
 // #define MT6835_INCREASE_CCW  0
-#define MT6835_INCREASE_CW   1
+#define MT6835_INCREASE_CW   0
 
 #define  MT6835_SPI_CS_PORT GPIOA
 #define  MT6835_SPI_CS_PIN GPIO_PIN_4

@@ -1901,8 +1901,8 @@ void test_motor_new_driver_currentLoopBandwith(void)
     // pid_iq.P = 60.0f;
     // pid_iq.I = 30.0f;
     // pid_iq.D = 0.0f;
-    pid_iq.P = 10.0f;
-    pid_iq.I = 0.0f;
+    pid_iq.P = 50.0f;
+    pid_iq.I = 60.0f;//40
     pid_iq.D = 0.0f;
 
     // BLDCMotor_initPID_CurrentVelocityAngle(&motor, 7, EncoderType_AS5600, ControlType_currentClosedLoopBandwidth, pid_id, pid_iq, pid_velocity, pid_degree);
@@ -1916,7 +1916,7 @@ void test_motor_new_driver_currentLoopBandwith(void)
 
     HAL_UART_Transmit_DMA(&print_uart, (uint8_t*)txDMA_buffer, strlen(txDMA_buffer));
 
-    motor.target = 0.05f;
+    motor.target = 0.00f;
 
     int i = 0;
     int t0,t1;
@@ -1926,16 +1926,15 @@ void test_motor_new_driver_currentLoopBandwith(void)
         BLDCMotor_KeyControl(&motor);
         if (motor.isEnable) {
 
-            // t0 = getUs();
             static int last_t = 0;
             int now_t = getUs();
 
             if (now_t - last_t > 1000000) {
-                motor.target += 0.05f;
+                motor.target += 0.01f;
                 last_t =  now_t;
             }
-            if (motor.target > 0.3) {
-                motor.target = 0.05f;
+            if (motor.target > 0.05) {
+                motor.target = 0.00f;
             }
             BLDCMotor_move(&motor, motor.target);
 
@@ -1964,7 +1963,7 @@ void test_motor_new_driver_currentVelocityLoopBandwith(void)
     // pid_iq.I = 30.0f;
     // pid_iq.D = 0.0f;
     pid_iq.P = 50.0f;
-    pid_iq.I = 40.0f;
+    pid_iq.I = 60.0f;
     pid_iq.D = 0.0f;
 
     //for Hz velocity
@@ -1999,7 +1998,6 @@ void test_motor_new_driver_currentVelocityLoopBandwith(void)
         BLDCMotor_KeyControl(&motor);
         if (motor.isEnable) {
 
-            // t0 = getUs();
             static int last_t = 0;
             int now_t = getUs();
             float delta_target = 360.0f*2;
@@ -2036,16 +2034,19 @@ void test_motor_new_driver_currentVelocityAngleLoopBandwith(void)
     // pid_iq.I = 30.0f;
     // pid_iq.D = 0.0f;
     pid_iq.P = 50.0f;
-    pid_iq.I = 40.0f;
+    pid_iq.I = 60.0f;
     pid_iq.D = 0.0f;
 
     PIDController pid_velocity;
+    // pid_velocity.P = 0.001f;
+    // pid_velocity.I = 0.0001f;
+    // pid_velocity.D = 0.0f;
     pid_velocity.P = 0.001f;
     pid_velocity.I = 0.0001f;
     pid_velocity.D = 0.0f;
     PIDController pid_degree;
-    pid_degree.P = 5.f;
-    pid_degree.I = 1.0f;
+    pid_degree.P = 12.f;
+    pid_degree.I = 0.0f;
     pid_degree.D = 0.000f;
 
     // BLDCMotor_initPID_CurrentVelocityAngle(&motor, 7, EncoderType_AS5600, ControlType_currentClosedLoopBandwidth, pid_id, pid_iq, pid_velocity, pid_degree);
@@ -2096,6 +2097,78 @@ void test_key0(void) {
     }
 
 }
+void test_motor_new_driver_currentAngleLoopBandwith(void)
+{
+    PIDController pid_id;
+    //1. ok
+    // pid_id.P = 60.0f;
+    // pid_id.I = 20.0f;
+    // pid_id.D = 0.0f;
+    pid_id.P = 60.0f;
+    pid_id.I = 20.0f;
+    pid_id.D = 0.0f;
+    PIDController pid_iq;
+    //2. ok
+    // pid_iq.P = 60.0f;
+    // pid_iq.I = 30.0f;
+    // pid_iq.D = 0.0f;
+    pid_iq.P = 50.0f;
+    pid_iq.I = 60.0f;
+    pid_iq.D = 0.0f;
+
+    PIDController pid_velocity;
+    pid_velocity.P = 0.005f;
+    pid_velocity.I = 0.003f;
+    pid_velocity.D = 0.0f;
+    // pid_velocity.P = 0.001f;
+    // pid_velocity.I = 0.0001f;
+    // pid_velocity.D = 0.0f;
+    PIDController pid_degree;
+    pid_degree.P = 0.003f;
+    pid_degree.I = 0.001f;
+    pid_degree.D = 0.000f;
+
+    // BLDCMotor_initPID_CurrentVelocityAngle(&motor, 7, EncoderType_AS5600, ControlType_currentClosedLoopBandwidth, pid_id, pid_iq, pid_velocity, pid_degree);
+    // PWM3_Init(CONFIG_PWM_HZ, CONFIG_PWM_RESOLUTION);
+    BLDCMotor_initPID_CurrentVelocityAngle(&motor, 7,EncoderType_MT6835, ControlType_currentAngleClosedLoop, pid_id, pid_iq, pid_velocity, pid_degree);
+
+    delay_ms(1000);
+    printf("waiting to start motor....\n");
+    BLDCMotor_disable(&motor);
+    HAL_UART_Transmit_DMA(&print_uart, (uint8_t*)txDMA_buffer, strlen(txDMA_buffer));
+
+
+    motor.target = 00.0f;
+
+    int i = 0;
+    int last_t = getUs();
+    int t0,t1;
+    while (1)
+    {
+        // BLDCMotor_ControlRunByKey(&motor);
+        BLDCMotor_KeyControl(&motor);
+        if (motor.isEnable) {
+            static int last_t = 0;
+            int now_t = getUs();
+            float delta_target = 60.0f;
+
+            if (now_t - last_t > 2000000) {
+                motor.target += delta_target;
+                last_t =  now_t;
+            }
+            if (motor.target > delta_target*4) {
+                motor.target = delta_target;
+            }
+
+            BLDCMotor_move(&motor, motor.target);
+            // t1 = getUs();
+            // int delta_t = t1 - t0;
+            // UART_SendFloat(1, (float)delta_t);
+
+            // HAL_Delay(1);
+        }
+    }
+}
 void test_us(void) {
     uint32_t t0 = 1000;
     uint32_t t1 = 2000;
@@ -2105,6 +2178,9 @@ void test_us(void) {
         HAL_Delay(1000);
     }
 }
+// void test_mt6835(void) {
+//     Example1_BasicUsage();
+// }
 
 extern void test_uart(void);
 extern void test_adc_inject(void);
@@ -2113,6 +2189,7 @@ extern void test_3pwm();
 void test_main(void)
 {
     HAL_TIM_Base_Start(&us_htim);
+    // test_mt6835();
 
     // test_us();
     // test_key0();
@@ -2132,12 +2209,14 @@ void test_main(void)
     // test_motor_new_driver_currentLoop();
 
     //1.ok
-    // test_motor_new_driver_currentOpenLoopBandwith();
+    test_motor_new_driver_currentOpenLoopBandwith();
     // test_motor_new_driver_currentLoopBandwith();
     // test_motor_new_driver_velocityLoop();
     // test_motor_new_driver_currentVelocityLoopBandwith();
     // test_motor_new_driver_currentVelocityLoopBandwith();
 
     //3.
-    test_motor_new_driver_currentVelocityAngleLoopBandwith();
+    // test_motor_new_driver_currentVelocityAngleLoopBandwith();
+    // test_motor_new_driver_currentAngleLoopBandwith();
+
 }

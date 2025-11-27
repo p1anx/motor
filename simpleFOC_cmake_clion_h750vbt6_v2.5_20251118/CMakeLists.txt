@@ -86,6 +86,8 @@ add_executable(${CMAKE_PROJECT_NAME}
         BSP/FOC/uart/uart.h
         BSP/stm32h7_dma/stm32h7_dma.c
         BSP/stm32h7_dma/stm32h7_dma.h
+        BSP/FOC/MotorType/Motor_2804/motor_2804.c
+        BSP/FOC/MotorType/Motor_2804/motor_2804.h
         #        BSP/STM32Monitor/Inc/acqTrigger.h
 #        BSP/STM32Monitor/Inc/dataAcq.h
 #        BSP/STM32Monitor/Src/acqTrigger.c
@@ -117,6 +119,7 @@ target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
         BSP/FOC/pid
         BSP/FOC/timer
         BSP/FOC/uart
+        BSP/FOC/MotorType/Motor_2804
 #        BSP/STM32Monitor/Inc
 )
 

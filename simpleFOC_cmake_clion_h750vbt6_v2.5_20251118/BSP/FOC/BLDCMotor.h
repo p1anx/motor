@@ -14,11 +14,6 @@
 #define MOTOR_DIRECTION AS5600_CCW_INCREASE
 
 
-#define  CONFIG_VoltageSupply   12
-#define  CONFIG_VoltageLimit    12
-#define  CONFIG_PWM_HZ          10e3
-#define  CONFIG_PWM_RESOLUTION  4096
-#define  CONFIG_PWM_DriverType  DriverTye_3PWM // DriverTye_3PWM or DriverTye_6PWM  0:3pwm, 1:6pwm
 
 
 typedef enum
@@ -74,12 +69,16 @@ typedef struct
     int pid_dt;
     float lastAngle;
     Direction_t direction;
-    LowPassFilter_t lpf_id, lpf_iq, lpf_velocity, lpf_angle, lpf_degree, lpf_ia, lpf_ib;
+    LowPassFilter_t lpf_id, lpf_iq, lpf_velocity, lpf_angle, lpf_degree, lpf_ia, lpf_ib, lpf_eAngle;
    LowPassFilter_t lpf_ia0, lpf_ib0, lpf_id0, lpf_iq0;
    LowPassFilter_t filter_velocity, filter_angle;
     int deadzone_enable;
     float deadzone_uq;
+  float target_iq;
+  float target_id;
   uint32_t delta_us;
+  float velocity_limit, iq_limit, id_limit;
+  float lastVelocity;
 
 
 } BLDCMotor_t;
@@ -136,4 +135,7 @@ void BLDCMotor_currentVelocityOpenloopInline(BLDCMotor_t *motor, float target_ve
 void BLDCMotor_KeyControl(BLDCMotor_t *motor);
 float BLDCMotor_getCurrentDQ_Polling(BLDCMotor_t *motor);
 int BLDCMotor_velocityClosedLoopInline(BLDCMotor_t *motor, float target);
+// float BLDCMotor_outputRamp(BLDCMotor_t *motor);
+float BLDCMotor_outputVelocityRamp(BLDCMotor_t *motor, float output_ramp);
+int BLDCMotor_currentAngleClosedLoopBandwith(BLDCMotor_t *motor, float target);
 #endif // !__BLDCMOTOR_H

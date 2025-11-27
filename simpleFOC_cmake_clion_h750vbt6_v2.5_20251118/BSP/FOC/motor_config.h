@@ -2,10 +2,60 @@
 #define __MOTOR_CONFIG_H
 // #include "gpio.h"
 #include "mymain.h"
+#define MOTOR_DEBUG_MODE  1
+
+#define CONFIG_FOR_MOTOR3508 0
+#define CONFIG_FOR_MOTOR2804 1
+
+//=====================================================
+//                   MOTOR 3508 CONFIG
+//=====================================================
+#define MOTOR3508_VoltageSupply 15
+#define MOTOR3508_VoltageLimit  15
+#define MOTOR3508_PWM_FREQUENCY 10e3
+#define MOTOR3508_PWM_RESOLUTION 4096
+#define MOTOR3508_PWMDriverType  DriverTye_3PWM
+
+//=====================================================
+//                   MOTOR 2804 CONFIG
+//=====================================================
+#define MOTOR2804_VoltageSupply 12
+#define MOTOR2804_VoltageLimit  12
+#define MOTOR2804_PWM_FREQUENCY 10e3
+#define MOTOR2804_PWM_RESOLUTION 4096
+#define MOTOR2804_PWMDriverType  DriverTye_3PWM
+
+
+#define CONFIG_IS_TEST 1
+#define CONFIG_IS_MAIN 0
+#define CONFIG_FILTER_Tf 0.08    //!< default velocity filter time constant
+#define CONFIG_MOTOR2804_RS 2.55f // omh phase resistence
+#define CONFIG_MOTOR2804_LS 0.86 //mH
+#define CONFIG_MOTOR2804_FLUX 0.0035 //Wb
+#define CONFIG_OUPUT_DEG_VELOCITY_RAMP 360*10
+
+//config for motor 3508
+#if CONFIG_FOR_MOTOR3508
+#define CONFIG_VoltageSupply   MOTOR3508_VoltageSupply
+#define CONFIG_VoltageLimit    MOTOR3508_VoltageLimit
+#define CONFIG_PWM_HZ          MOTOR3508_PWM_FREQUENCY
+#define CONFIG_PWM_RESOLUTION  MOTOR3508_PWM_RESOLUTION
+#define CONFIG_PWM_DriverType  MOTOR3508_PWMDriverType // DriverTye_3PWM or DriverTye_6PWM  0:3pwm, 1:6pwm
+#endif
+
+#if CONFIG_FOR_MOTOR2804
+#define CONFIG_VoltageSupply   MOTOR2804_VoltageSupply
+#define CONFIG_VoltageLimit    MOTOR2804_VoltageLimit
+#define CONFIG_PWM_HZ          MOTOR2804_PWM_FREQUENCY
+#define CONFIG_PWM_RESOLUTION  MOTOR2804_PWM_RESOLUTION
+#define CONFIG_PWM_DriverType  MOTOR2804_PWMDriverType // DriverTye_3PWM or DriverTye_6PWM  0:3pwm, 1:6pwm
+#endif
+
 
 #define BLDCMOTOR_ENABLE_PORT GPIOD
 #define BLDCMOTOR_ENABLE_PIN GPIO_PIN_13
-#define CONFIG_FILTER_Tf 0.08    //!< default velocity filter time constant
+
+
 
 #define DEF_POWER_SUPPLY 2 //!< default power supply voltage
 // velocity PI controller params

@@ -22,6 +22,7 @@ typedef enum
     ControlType_angleClosedLoop,    //!< angle motion control
     ControlType_currentClosedLoop,  //!< angle motion control
     ControlType_currentVelocityClosedLoop,  //!< angle motion control
+    ControlType_currentAngleClosedLoop,  //!< angle motion control
     ControlType_currentVelocityAngleClosedLoop,  //!< angle motion control
     ControlType_currentClosedLoopBandwidth,  //!< angle motion control
     ControlType_currentClosedLoopBandwidthInline,  //!< angle motion control

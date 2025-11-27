@@ -30,6 +30,8 @@
 /* USER CODE BEGIN Includes */
 #include <stdio.h>
 extern void test_main(void);
+#include "motor_config.h"
+#include "mymain.h"
 
 /* USER CODE END Includes */
 
@@ -112,7 +114,12 @@ int main(void)
   MX_USART3_UART_Init();
   /* USER CODE BEGIN 2 */
   // printf("start test main\n");
+#if MOTOR_DEBUG_MODE
   test_main();
+#else
+  mymain();
+#endif
+
 
 
   /* USER CODE END 2 */
