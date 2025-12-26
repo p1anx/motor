@@ -1,0 +1,8 @@
+//
+// Created by xwj on 11/6/25.
+//
+
+#ifndef STM32H750VBT6_CMAKE_MY_ADC_H
+#define STM32H750VBT6_CMAKE_MY_ADC_H
+
+#endif // STM32H750VBT6_CMAKE_MY_ADC_H
