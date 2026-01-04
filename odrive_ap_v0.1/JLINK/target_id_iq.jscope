@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<JScopeProject>
+    <FileVersion major="1" minor="1" />
+    <Project>
+        <Configuration>
+            <JLink>
+                <Options Connection="1" IsRTTSession="0" IsRTTWithTimeStamp="0" IsRTTPlus="0" SamplingPeriod="100" SerialNo="0" JTAG_IRPre="0" JTAG_DRPre="0" IP="" TargetDevice="STM32F405RG" Nickname="" TargetInterface="SWD" InterfaceSpeed="4000" />
+            </JLink>
+            <ElfFile Name="/home/xwj/3-data/0-code/0-github/motor/odrive_ap_v0.1/build/default/odrive_ap.elf" />
+            <Scope>
+                <Options TimeResolutionUs="1000000" />
+            </Scope>
+            <Trigger>
+                <Options Level="0" Symbol="target" On="0" Auto="0" Rise="0" Fall="0" />
+            </Trigger>
+        </Configuration>
+        <Windows>
+            <Graph Show="1" />
+            <Watch Show="1" />
+        </Windows>
+        <SelectedSymbols>
+            <Symbol>
+                <Options Name="target" Address="0x20000C38" Type="float" TypeID="1" Size="4" GraphColorRed="255" GraphColorGreen="0" GraphColorBlue="0" YMinSampled="0" YMaxSampled="2" YAvgSampled="1.0021" Offset="4" ShowInGraph="1" YOffset="0" IsAutoConfig="0" YResolution="1" MaxValue="-2147483648" File="/home/xwj/3-data/0-code/0-github/motor/odrive_ap_v0.1/BSP/FOC/BLDCMotor.c" DrawStyle="0" NameWithParents="motor.target" />
+            </Symbol>
+            <Symbol>
+                <Options Name="i_d" Address="0x20000C94" Type="float" TypeID="1" Size="4" GraphColorRed="255" GraphColorGreen="255" GraphColorBlue="0" YMinSampled="-3.96132" YMaxSampled="2.33035" YAvgSampled="-0.598177" Offset="8" ShowInGraph="1" YOffset="0" IsAutoConfig="0" YResolution="1" MaxValue="-2147483648" File="/home/xwj/3-data/0-code/0-github/motor/odrive_ap_v0.1/BSP/FOC/BLDCMotor.c" DrawStyle="0" NameWithParents="motor.CurrentSense.i_d" />
+            </Symbol>
+            <Symbol>
+                <Options Name="i_q" Address="0x20000C98" Type="float" TypeID="1" Size="4" GraphColorRed="0" GraphColorGreen="255" GraphColorBlue="255" YMinSampled="-0.30895" YMaxSampled="2.36853" YAvgSampled="0.704383" Offset="12" ShowInGraph="1" YOffset="0" IsAutoConfig="0" YResolution="1" MaxValue="-2147483648" File="/home/xwj/3-data/0-code/0-github/motor/odrive_ap_v0.1/BSP/FOC/BLDCMotor.c" DrawStyle="0" NameWithParents="motor.CurrentSense.i_q" />
+            </Symbol>
+        </SelectedSymbols>
+    </Project>
+</JScopeProject>
