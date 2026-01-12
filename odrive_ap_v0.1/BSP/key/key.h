@@ -6,8 +6,14 @@
 #define KEY_OFF	0
 
 //pe0
+#ifdef IS_ODRIVE
 #define KEY0_GPIO_Port GPIOE
 #define KEY0_GPIO_Pin GPIO_PIN_6
+#endif
+
+// #define KEY0_GPIO_Port GPIOE
+// #define KEY0_GPIO_Pin GPIO_PIN_6
+
 
 #define KEY1_GPIO_Port GPIOE
 #define KEY1_GPIO_Pin GPIO_PIN_1

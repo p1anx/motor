@@ -58,7 +58,16 @@ typedef SPI_HandleTypeDef* SPI_Handle;
 typedef GPIO_TypeDef* GPIO_Handle;
 typedef uint16_t GPIO_Number_e;
 
-#define DRV8301_SPI hspi3;
+#ifdef IS_ODRIVE
+  #define DRV8301_SPI hspi3
+  #define M0_NCS_Pin        GPIO_PIN_13
+  #define M0_NCS_GPIO_Port  GPIOC
+  #define SPI0_CS_Pin       GPIO_PIN_4
+  #define SPI0_CS_GPIO_Port GPIOC
+  #define EN_GATE_Pin       GPIO_PIN_12
+  #define EN_GATE_GPIO_Port GPIOB
+#endif
+
 
 
 //!

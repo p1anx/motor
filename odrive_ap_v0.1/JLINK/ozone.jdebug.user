@@ -1,76 +1,39 @@
 
 
-GraphedExpression="(motor).velocity", Color=#ff007f
-GraphedExpression="(motor).angle", Color=#35792b, Show=0
-GraphedExpression="(currentSense).i_q", Color=#ff00ff, Show=0
-GraphedExpression="(motor).degree", Color=#5500ff, Show=0
-GraphedExpression="(BLDCMotor.c::motor).target_velocity", Color=#c313b5, Show=0
-GraphedExpression="(BLDCMotor.c::motor).target_iq", Color=#ab7b05, Show=0
-GraphedExpression="((BLDCMotor.c::motor).foc_motor).voltage_q", Color=#7fd3b7, Show=0
-GraphedExpression="(currentSense).i_d", Color=#50328f, Show=0
-GraphedExpression="(currentSense).i_b", Color=#c587a5, Show=0
-GraphedExpression="(currentSense).i_a", Color=#999401, Show=0
-GraphedExpression="g_out_rate", Color=#aa1d24, Show=0
-GraphedExpression="(motor).target", Color=#000000
+GraphedExpression="(currentSense).i_a", Color=#e56a6f
+GraphedExpression="(currentSense).i_b", Color=#35792b
+GraphedExpression="(currentSense).i_d", Color=#769dda
+GraphedExpression="(currentSense).i_q", Color=#b14f0d
+OpenDocument="BLDCMotor.c", FilePath="/home/xwj/3-data/0-code/0-github/motor/odrive_ap_v0.1/BSP/FOC/BLDCMotor.c", Line=30
+OpenDocument="foc_base.c", FilePath="/home/xwj/3-data/0-code/0-github/motor/odrive_ap_v0.1/BSP/FOC/foc_base.c", Line=67
+OpenDocument="test_main.c", FilePath="/home/xwj/3-data/0-code/0-github/motor/odrive_ap_v0.1/BSP/test/test_main.c", Line=180
 OpenDocument="BLDCDriver.c", FilePath="/home/xwj/3-data/0-code/0-github/motor/odrive_ap_v0.1/BSP/FOC/BLDCDriver/BLDCDriver.c", Line=333
-OpenDocument="main.c", FilePath="/home/xwj/3-data/0-code/0-github/motor/odrive_ap_v0.1/Core/Src/main.c", Line=62
-OpenDocument="stm32f4xx_hal_spi.c", FilePath="/home/xwj/3-data/0-code/0-github/motor/odrive_ap_v0.1/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_spi.c", Line=1281
-OpenDocument="stm32f4xx_hal_adc_ex.c", FilePath="/home/xwj/3-data/0-code/0-github/motor/odrive_ap_v0.1/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_adc_ex.c", Line=562
-OpenDocument="BLDCMotor.c", FilePath="/home/xwj/3-data/0-code/0-github/motor/odrive_ap_v0.1/BSP/FOC/BLDCMotor.c", Line=594
-OpenDocument="stm32_hal.c", FilePath="/home/xwj/3-data/0-code/0-github/motor/odrive_ap_v0.1/BSP/stm32_hal.c", Line=94
-OpenDocument="foc_base.c", FilePath="/home/xwj/3-data/0-code/0-github/motor/odrive_ap_v0.1/BSP/FOC/foc_base.c", Line=85
+OpenDocument="stm32f4xx_hal_spi.c", FilePath="/home/xwj/3-data/0-code/0-github/motor/odrive_ap_v0.1/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_spi.c", Line=1275
+OpenDocument="main.c", FilePath="/home/xwj/3-data/0-code/0-github/motor/odrive_ap_v0.1/Core/Src/main.c", Line=59
+OpenDocument="currentSense.c", FilePath="/home/xwj/3-data/0-code/0-github/motor/odrive_ap_v0.1/BSP/FOC/currentSense/currentSense.c", Line=931
 OpenDocument="stm32f4xx_hal.c", FilePath="/home/xwj/3-data/0-code/0-github/motor/odrive_ap_v0.1/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal.c", Line=315
-OpenDocument="mt6835.c", FilePath="/home/xwj/3-data/0-code/0-github/motor/odrive_ap_v0.1/BSP/FOC/encoder/mt6835.c", Line=16
-OpenDocument="stm32f4xx_hal_gpio.c", FilePath="/home/xwj/3-data/0-code/0-github/motor/odrive_ap_v0.1/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_gpio.c", Line=400
+OpenDocument="test_motor.c", FilePath="/home/xwj/3-data/0-code/0-github/motor/odrive_ap_v0.1/BSP/test/test_motor.c", Line=260
 OpenDocument="startup_stm32f405xx.s", FilePath="/home/xwj/3-data/0-code/0-github/motor/odrive_ap_v0.1/startup_stm32f405xx.s", Line=50
-OpenDocument="currentSense.c", FilePath="/home/xwj/3-data/0-code/0-github/motor/odrive_ap_v0.1/BSP/FOC/currentSense/currentSense.c", Line=861
-OpenDocument="test_motor.c", FilePath="/home/xwj/3-data/0-code/0-github/motor/odrive_ap_v0.1/BSP/test/test_motor.c", Line=66
-OpenDocument="stm32f4xx_hal_adc.c", FilePath="/home/xwj/3-data/0-code/0-github/motor/odrive_ap_v0.1/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_adc.c", Line=1289
-OpenDocument="test_main.c", FilePath="/home/xwj/3-data/0-code/0-github/motor/odrive_ap_v0.1/BSP/test/test_main.c", Line=579
+OpenDocument="stm32_hal.c", FilePath="/home/xwj/3-data/0-code/0-github/motor/odrive_ap_v0.1/BSP/stm32_hal.c", Line=94
 OpenToolbar="Debug", Floating=0, x=0, y=0
-OpenWindow="Registers 1", DockArea=RIGHT, x=0, y=3, w=781, h=311, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0, FilteredItems=[], RefreshRate=1
-OpenWindow="Disassembly", DockArea=RIGHT, x=0, y=0, w=781, h=256, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0
-OpenWindow="Global Data", DockArea=RIGHT, x=0, y=1, w=781, h=393, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0
-OpenWindow="Local Data", DockArea=RIGHT, x=0, y=2, w=781, h=247, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0
-OpenWindow="Watched Data 1", DockArea=LEFT, x=0, y=0, w=706, h=1225, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0
-OpenWindow="Data Sampling", DockArea=BOTTOM, x=1, y=0, w=1841, h=431, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0, VisibleTab=0, UniformSampleSpacing=0
-OpenWindow="Console", DockArea=BOTTOM, x=0, y=0, w=757, h=431, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0
+OpenWindow="Registers 1", DockArea=RIGHT, x=0, y=3, w=781, h=309, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0, FilteredItems=[], RefreshRate=1
+OpenWindow="Disassembly", DockArea=RIGHT, x=0, y=0, w=781, h=264, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0
+OpenWindow="Global Data", DockArea=RIGHT, x=0, y=1, w=781, h=377, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0
+OpenWindow="Local Data", DockArea=RIGHT, x=0, y=2, w=781, h=257, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0
+OpenWindow="Watched Data 1", DockArea=LEFT, x=0, y=0, w=758, h=1225, TabPos=0, TopOfStack=1, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0
+OpenWindow="Data Sampling", DockArea=BOTTOM, x=1, y=0, w=1417, h=431, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0, VisibleTab=0, UniformSampleSpacing=0
+OpenWindow="Console", DockArea=BOTTOM, x=0, y=0, w=1181, h=431, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0
 SmartViewPlugin="", Page="", Toolbar="Hidden", Window="SmartView 1"
-TableHeader="Global Data", SortCol="Name", SortOrder="ASCENDING", VisibleCols=["Name";"Value";"Location";"Size";"Type";"Scope"], ColWidths=[271;100;116;100;100;100]
+TableHeader="Watched Data 1", SortCol="Expression", SortOrder="ASCENDING", VisibleCols=["Expression";"Value";"Location";"Refresh"], ColWidths=[396;220;140;100]
+TableHeader="Global Data", SortCol="Name", SortOrder="ASCENDING", VisibleCols=["Name";"Value";"Location";"Size";"Type";"Scope"], ColWidths=[271;100;116;100;100;868]
+TableHeader="Local Data", SortCol="Name", SortOrder="ASCENDING", VisibleCols=["Name";"Value";"Location";"Size";"Type";"Scope"], ColWidths=[177;100;116;100;100;434]
+TableHeader="Data Sampling Table", SortCol="None", SortOrder="ASCENDING", VisibleCols=["Index";"Time";" (currentSense).i_a";" (currentSense).i_b";" (currentSense).i_d";" (currentSense).i_q"], ColWidths=[100;100;100;100;100;100]
+TableHeader="Data Sampling Setup", SortCol="Type", SortOrder="ASCENDING", VisibleCols=["Expression";"Type";"Value";"Min";"Max";"Average";"# Changes";"Min. Change";"Max. Change"], ColWidths=[440;100;196;182;210;210;141;224;210]
 TableHeader="Power Sampling", SortCol="None", SortOrder="ASCENDING", VisibleCols=["Index";"Time";"Ch 0"], ColWidths=[100;100;100]
-TableHeader="Registers 1", SortCol="Name", SortOrder="ASCENDING", VisibleCols=["Name";"Value";"Description"], ColWidths=[106;196;479]
+TableHeader="Registers 1", SortCol="Name", SortOrder="ASCENDING", VisibleCols=["Name";"Value";"Description"], ColWidths=[106;196;504]
 TableHeader="RegisterSelectionDialog", SortCol="None", SortOrder="ASCENDING", VisibleCols=[], ColWidths=[]
 TableHeader="TargetExceptionDialog", SortCol="Name", SortOrder="ASCENDING", VisibleCols=["Name";"Value";"Address";"Description"], ColWidths=[200;100;100;359]
-TableHeader="Watched Data 1", SortCol="Expression", SortOrder="ASCENDING", VisibleCols=["Expression";"Value";"Location";"Refresh"], ColWidths=[396;220;140;100]
-TableHeader="Data Sampling Table", SortCol="None", SortOrder="ASCENDING", VisibleCols=["Index";"Time";" (motor).velocity";" (motor).angle";" (currentSense).i_q";" (motor).degree";" (BLDCMotor.c::motor).target_velocity";" (BLDCMotor.c::motor).target_iq";" ((BLDCMotor.c::motor).foc_motor).voltage_q";" (currentSense).i_d";" (currentSense).i_b";" (currentSense).i_a";" g_out_rate";" (motor).target"], ColWidths=[100;100;100;100;100;100;100;100;100;100;100;100;100;100]
-TableHeader="Data Sampling Setup", SortCol="Type", SortOrder="ASCENDING", VisibleCols=["Expression";"Type";"Value";"Min";"Max";"Average";"# Changes";"Min. Change";"Max. Change"], ColWidths=[440;100;100;210;224;114;141;161;336]
-TableHeader="Local Data", SortCol="Name", SortOrder="ASCENDING", VisibleCols=["Name";"Value";"Location";"Size";"Type";"Scope"], ColWidths=[177;100;116;100;100;188]
-WatchedExpression="motor.isEnable", Window=Watched Data 1
-WatchedExpression="(motor).e_angle", Window=Watched Data 1
-WatchedExpression="velocity", Window=Watched Data 1
-WatchedExpression="(motor).target", Window=Watched Data 1
-WatchedExpression="(motor).velocity", Window=Watched Data 1
-WatchedExpression="(motor).PID_velocity", Window=Watched Data 1
-WatchedExpression="((BLDCMotor.c::motor).foc_motor).voltage_q", Window=Watched Data 1
-WatchedExpression="(currentSense).i_a", Window=Watched Data 1
-WatchedExpression="(currentSense).i_b", Window=Watched Data 1
-WatchedExpression="(motor).angle", Window=Watched Data 1
-WatchedExpression="((motor).Driver).Ualpha", Window=Watched Data 1
-WatchedExpression="((motor).Driver).Ubeta", Window=Watched Data 1
-WatchedExpression="(currentSense).i_alpha", Window=Watched Data 1
-WatchedExpression="(currentSense).i_beta", Window=Watched Data 1
-WatchedExpression="(currentSense).i_d", Window=Watched Data 1
-WatchedExpression="(currentSense).i_q", Window=Watched Data 1
-WatchedExpression="(motor).PID_id", Window=Watched Data 1
-WatchedExpression="(motor).PID_iq", Window=Watched Data 1
-WatchedExpression="(motor).target_iq", Window=Watched Data 1
-WatchedExpression="driver", Window=Watched Data 1
-WatchedExpression="((BLDCMotor.c::motor).foc_motor).voltage_sensor_align", Window=Watched Data 1
 WatchedExpression="currentSense", Window=Watched Data 1
-WatchedExpression="g_e_angle", Window=Watched Data 1
-WatchedExpression="((motor).foc_motor).zero_electric_angle", Window=Watched Data 1
-WatchedExpression="(motor).degree", Window=Watched Data 1
-WatchedExpression="(BLDCMotor.c::motor).PID_degree", Window=Watched Data 1
-WatchedExpression="(BLDCMotor.c::motor).target_iq", Window=Watched Data 1
-WatchedExpression="(BLDCMotor.c::motor).target_velocity", Window=Watched Data 1
-WatchedExpression="g_out_rate", Window=Watched Data 1
+WatchedExpression="motor", Window=Watched Data 1
+WatchedExpression="delta_target", Window=Watched Data 1
+WatchedExpression="g_delta_target", Window=Watched Data 1

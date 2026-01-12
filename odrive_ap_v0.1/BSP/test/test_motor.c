@@ -16,6 +16,10 @@
 #include <stdio.h>
 #include "CONFIG_PID.h"
 #include <string.h>
+#ifdef JS_RTT
+#include "JS_RTT.h"
+#endif
+
 
 extern BLDCMotor_t motor;
 extern CurrentSense_t currentSense;
@@ -130,6 +134,10 @@ void motor_currentLoop(void)
   // motor.PID_iq.P = 1.5f;
   // motor.PID_iq.I = 1.f;//200
   // motor.PID_iq.limit = 2;
+#ifdef JS_RTT
+  JS_RTT_InitFloat(3);
+#endif
+
   motor.PID_id.P = CONFIG_PID_CUR_ID_KP;//10
   motor.PID_id.I = CONFIG_PID_CUR_ID_KI; //90
   motor.PID_id.limit = CONFIG_PID_CUR_ID_LIMIT;
@@ -236,6 +244,7 @@ void motor_currentVelocityLoop(void)
   }
 }
 
+float g_delta_target = 10.f;
 void motor_currentVelocityAngleLoop(void)
 {
   motor.PID_id.P = CONFIG_PID_CUR_ID_KP;//10
@@ -250,9 +259,9 @@ void motor_currentVelocityAngleLoop(void)
   motor.PID_velocity.I = CONFIG_PID_CUR_VEL_KI;
   motor.PID_velocity.limit = CONFIG_PID_CUR_VEL_LIMIT; //A
 
-  motor.PID_degree.P = 20.f;
-  motor.PID_degree.I = 0.0000f;
-  motor.PID_degree.limit = 360*15; //deg/s
+  motor.PID_degree.P = CONFIG_PID_CUR_VEL_POS_KP;
+  motor.PID_degree.I = CONFIG_PID_CUR_VEL_POS_KI;
+  motor.PID_degree.limit = CONFIG_PID_CUR_VEL_POS_LIMIT; //deg/s
   BLDCMotor_init3508(&motor, EncoderType_MT6835, ControlType_currentVelocityAngleClosedLoopBandwidth);
     delay_ms(1000);
     BLDCMotor_disable(&motor);
@@ -270,7 +279,7 @@ void motor_currentVelocityAngleLoop(void)
         if (motor.isEnable) {
             static int last_t = 0;
             int now_t = getUs();
-            float delta_target = 10;
+            float delta_target = g_delta_target;
             static int target_direction = 0;
 
             if (now_t - last_t > 1000000) {
@@ -295,10 +304,10 @@ void motor_currentVelocityAngleLoop(void)
 }
 void test_motor(void) {
   //1. velocity open loop
-  // motor_currentOpenLoopBandwith();
+  motor_currentOpenLoopBandwith();
 
   // 2. velocity closed loop
-  motor_velocityLoop();
+  // motor_velocityLoop();
 
   //3. current
   // motor_currentLoop();

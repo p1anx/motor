@@ -46,6 +46,7 @@ extern "C"
      * @return PID controller output
      */
     float PIDController_update(PIDController *pid, float error);
+    void PIDController_resetIntegral(PIDController *pid);
 
 #ifdef __cplusplus
 }

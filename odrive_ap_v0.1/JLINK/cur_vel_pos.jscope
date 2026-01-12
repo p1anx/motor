@@ -4,14 +4,14 @@
     <Project>
         <Configuration>
             <JLink>
-                <Options Connection="1" IsRTTSession="0" IsRTTWithTimeStamp="0" IsRTTPlus="0" SamplingPeriod="100" SerialNo="0" JTAG_IRPre="0" JTAG_DRPre="0" IP="" TargetDevice="STM32F405RG" Nickname="" TargetInterface="SWD" InterfaceSpeed="4000" />
+                <Options Connection="1" IsRTTSession="1" IsRTTWithTimeStamp="1" IsRTTPlus="0" SamplingPeriod="100" SerialNo="0" JTAG_IRPre="0" JTAG_DRPre="0" IP="" TargetDevice="STM32F405RG" Nickname="" TargetInterface="SWD" InterfaceSpeed="4000" />
             </JLink>
-            <ElfFile Name="/home/xwj/3-data/0-code/0-github/motor/odrive_ap_v0.1/build/default/odrive_ap.elf" />
+            <ElfFile Name="" />
             <Scope>
                 <Options TimeResolutionUs="1000000" />
             </Scope>
             <Trigger>
-                <Options Level="0" Symbol="velocity" On="0" Auto="0" Rise="0" Fall="0" />
+                <Options Level="0" Symbol="4 Byte float RTT Data 0" On="0" Auto="0" Rise="0" Fall="0" />
             </Trigger>
         </Configuration>
         <Windows>
@@ -20,22 +20,13 @@
         </Windows>
         <SelectedSymbols>
             <Symbol>
-                <Options Name="velocity" Address="0x20000C28" Type="float" TypeID="1" Size="4" GraphColorRed="0" GraphColorGreen="255" GraphColorBlue="127" YMinSampled="-17206.4" YMaxSampled="27145.8" YAvgSampled="71.0183" Offset="4" ShowInGraph="0" YOffset="0" IsAutoConfig="0" YResolution="1000" MaxValue="-2147483648" File="/home/xwj/3-data/0-code/0-github/motor/odrive_ap_v0.1/BSP/FOC/BLDCMotor.c" DrawStyle="0" NameWithParents="motor.velocity" />
+                <Options Name="4 Byte float RTT Data 0" Address="0x00000000" Type="" TypeID="1" Size="4" GraphColorRed="255" GraphColorGreen="0" GraphColorBlue="0" YMinSampled="0" YMaxSampled="4" YAvgSampled="2.20984" Offset="4" ShowInGraph="1" YOffset="0" IsAutoConfig="0" YResolution="1" MaxValue="0" File="" DrawStyle="0" NameWithParents="4 Byte float RTT Data 0" />
             </Symbol>
             <Symbol>
-                <Options Name="degree" Address="0x20000C30" Type="float" TypeID="1" Size="4" GraphColorRed="85" GraphColorGreen="0" GraphColorBlue="255" YMinSampled="0" YMaxSampled="360" YAvgSampled="92.5539" Offset="8" ShowInGraph="1" YOffset="0" IsAutoConfig="0" YResolution="50" MaxValue="-2147483648" File="/home/xwj/3-data/0-code/0-github/motor/odrive_ap_v0.1/BSP/FOC/BLDCMotor.c" DrawStyle="0" NameWithParents="motor.degree" />
+                <Options Name="4 Byte float RTT Data 1" Address="0x00000000" Type="" TypeID="1" Size="4" GraphColorRed="0" GraphColorGreen="255" GraphColorBlue="0" YMinSampled="-1.12098" YMaxSampled="4.70281" YAvgSampled="2.20849" Offset="8" ShowInGraph="1" YOffset="0" IsAutoConfig="0" YResolution="1" MaxValue="0" File="" DrawStyle="0" NameWithParents="4 Byte float RTT Data 1" />
             </Symbol>
             <Symbol>
-                <Options Name="target" Address="0x20000C38" Type="float" TypeID="1" Size="4" GraphColorRed="255" GraphColorGreen="0" GraphColorBlue="0" YMinSampled="0" YMaxSampled="160" YAvgSampled="82.1063" Offset="12" ShowInGraph="0" YOffset="0" IsAutoConfig="0" YResolution="50" MaxValue="-2147483648" File="/home/xwj/3-data/0-code/0-github/motor/odrive_ap_v0.1/BSP/FOC/BLDCMotor.c" DrawStyle="0" NameWithParents="motor.target" />
-            </Symbol>
-            <Symbol>
-                <Options Name="i_q" Address="0x20000C98" Type="float" TypeID="1" Size="4" GraphColorRed="255" GraphColorGreen="0" GraphColorBlue="255" YMinSampled="-6.9288" YMaxSampled="6.98561" YAvgSampled="0.165126" Offset="16" ShowInGraph="1" YOffset="0" IsAutoConfig="0" YResolution="1" MaxValue="-2147483648" File="/home/xwj/3-data/0-code/0-github/motor/odrive_ap_v0.1/BSP/FOC/BLDCMotor.c" DrawStyle="0" NameWithParents="motor.CurrentSense.i_q" />
-            </Symbol>
-            <Symbol>
-                <Options Name="target_iq" Address="0x20000E24" Type="float" TypeID="1" Size="4" GraphColorRed="0" GraphColorGreen="255" GraphColorBlue="255" YMinSampled="-6" YMaxSampled="6" YAvgSampled="0.121731" Offset="20" ShowInGraph="1" YOffset="0" IsAutoConfig="0" YResolution="1" MaxValue="-2147483648" File="/home/xwj/3-data/0-code/0-github/motor/odrive_ap_v0.1/BSP/FOC/BLDCMotor.c" DrawStyle="0" NameWithParents="motor.target_iq" />
-            </Symbol>
-            <Symbol>
-                <Options Name="target_velocity" Address="0x20000E30" Type="float" TypeID="1" Size="4" GraphColorRed="255" GraphColorGreen="255" GraphColorBlue="0" YMinSampled="-5400" YMaxSampled="5400" YAvgSampled="-118.549" Offset="24" ShowInGraph="0" YOffset="0" IsAutoConfig="0" YResolution="2000" MaxValue="-2147483648" File="/home/xwj/3-data/0-code/0-github/motor/odrive_ap_v0.1/BSP/FOC/BLDCMotor.c" DrawStyle="0" NameWithParents="motor.target_velocity" />
+                <Options Name="4 Byte float RTT Data 2" Address="0x00000000" Type="" TypeID="1" Size="4" GraphColorRed="255" GraphColorGreen="0" GraphColorBlue="255" YMinSampled="-0.0986972" YMaxSampled="0.519829" YAvgSampled="-0.00530486" Offset="12" ShowInGraph="1" YOffset="0" IsAutoConfig="0" YResolution="1" MaxValue="0" File="" DrawStyle="0" NameWithParents="4 Byte float RTT Data 2" />
             </Symbol>
         </SelectedSymbols>
     </Project>

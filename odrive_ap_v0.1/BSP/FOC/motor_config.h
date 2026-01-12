@@ -9,35 +9,61 @@
 
 #define CONFIG_VOFA_UART huart4
 
-#define CONFIG_CUR_FREQ  10e3              //current loop frequency(Hz)
-#define CONFIG_CUR_VEL_FREQ  (10e3/5)      //velocity loop frequency(Hz)
-#define CONFIG_CUR_VEL_POS_FREQ  (10e3/10)      //position loop frequency(Hz)
+#define CONFIG_CUR_FREQ  20e3              //current loop frequency(Hz)
+#define CONFIG_CUR_VEL_FREQ  (CONFIG_CUR_FREQ/5)      //velocity loop frequency(Hz)
+#define CONFIG_CUR_VEL_POS_FREQ  (CONFIG_CUR_FREQ/20)      //position loop frequency(Hz)
 
+// #define CONFIG_ODRIVE_R_SAMPLE 0.001
+// #define CONFIG_ODRIVE_GAIN     10
+//
+// #define CONFIG_DRIVER_ENABLE_PORT GPIOA
+// #define CONFIG_DRIVER_ENABLE_PIN  GPIO_PIN_9
+// #define CONFIG_DRIVER_PWM_HTIM    htim1
+//
+// #if 1
+// #define CONFIG_DRIVER_R_SAMPLE CONFIG_ODRIVE_R_SAMPLE //ohm 0.001
+// #define CONFIG_DRIVER_GAIN     CONFIG_ODRIVE_GAIN    // 50
+// #elif
+// #define CONFIG_DRIVER_R_SAMPLE 0.02 //ohm 0.001
+// #define CONFIG_DRIVER_GAIN     6    // 50
+//
+// #endif
+
+#ifdef  IS_ODRIVE
 //================================================
 //             ODrive Sample R and Gain
 //================================================
-#define CONFIG_ODRIVE_R_SAMPLE 0.001
-#define CONFIG_ODRIVE_GAIN     10
+  #define CONFIG_ODRIVE_R_SAMPLE 0.001
+  #define CONFIG_ODRIVE_GAIN     10
+
+  #define CONFIG_DRIVER_ENABLE_PORT GPIOA
+  #define CONFIG_DRIVER_ENABLE_PIN  GPIO_PIN_9
+  #define CONFIG_DRIVER_PWM_HTIM    htim1
+
+  #define CONFIG_DRIVER_R_SAMPLE CONFIG_ODRIVE_R_SAMPLE //ohm 0.001
+  #define CONFIG_DRIVER_GAIN     CONFIG_ODRIVE_GAIN    // 50
+
+//================================================
+//                ODRIVE MT6835
+//================================================
+  #define CONFIG_MT6835_SPI_CS_PORT  GPIOC
+  #define CONFIG_MT6835_SPI_CS_PIN   GPIO_PIN_4
+  #define CONFIG_MT6835_HSPI         hspi3
+
+#else
 
 #define CONFIG_DRIVER_ENABLE_PORT GPIOA
 #define CONFIG_DRIVER_ENABLE_PIN  GPIO_PIN_9
 #define CONFIG_DRIVER_PWM_HTIM    htim1
-
-#if 1
-#define CONFIG_DRIVER_R_SAMPLE CONFIG_ODRIVE_R_SAMPLE //ohm 0.001
-#define CONFIG_DRIVER_GAIN     CONFIG_ODRIVE_GAIN    // 50
-#elif
 #define CONFIG_DRIVER_R_SAMPLE 0.02 //ohm 0.001
 #define CONFIG_DRIVER_GAIN     6    // 50
 
+  #define CONFIG_MT6835_SPI_CS_PORT  GPIOC
+  #define CONFIG_MT6835_SPI_CS_PIN   GPIO_PIN_4
+  #define CONFIG_MT6835_HSPI         hspi3
+
 #endif
 
-//================================================
-//                  MT6835
-//================================================
-#define CONFIG_MT6835_SPI_CS_PORT  GPIOC
-#define CONFIG_MT6835_SPI_CS_PIN   GPIO_PIN_4
-#define CONFIG_MT6835_HSPI         hspi3
 
 //================================================
 //                  STM32 ADC
@@ -76,7 +102,7 @@
 //=====================================================
 #define MOTOR3508_VoltageSupply 15
 #define MOTOR3508_VoltageLimit  10
-#define MOTOR3508_PWM_FREQUENCY 10e3
+#define MOTOR3508_PWM_FREQUENCY CONFIG_CUR_FREQ
 #define MOTOR3508_PWM_RESOLUTION 4096
 #define MOTOR3508_PWMDriverType  DriverTye_6PWM
 #define MOTOR3508_PP   7//pole pairs
@@ -90,7 +116,7 @@
 //=====================================================
 #define MOTOR2804_VoltageSupply 12
 #define MOTOR2804_VoltageLimit  12
-#define MOTOR2804_PWM_FREQUENCY 10e3
+#define MOTOR2804_PWM_FREQUENCY CONFIG_CUR_FREQ
 #define MOTOR2804_PWM_RESOLUTION 4096
 #define MOTOR2804_PWMDriverType  DriverTye_6PWM
 #define MOTOR2804_PP   7//pole pairs

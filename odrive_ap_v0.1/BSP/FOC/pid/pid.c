@@ -72,6 +72,9 @@ float PIDController_update(PIDController *pid, float error)
     pid->timestamp_prev = timestamp_now;
     return output;
 }
+void PIDController_resetIntegral(PIDController *pid) {
+    pid->integral_prev = 0;
+}
 #if WITHOUT_TIMER
 float PIDController_update(PIDController *pid, float error)
 {

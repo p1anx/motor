@@ -16,6 +16,10 @@
 #include <string.h>
 #include "vofa.h"
 #include "DRV830X.h"
+#ifdef JS_RTT
+#include "JS_RTT.h"
+#endif
+
 
 extern int g_keyFlag;
 BLDCMotor_t motor;
@@ -1082,6 +1086,11 @@ int BLDCMotor_currentClosedLoopBandwith(BLDCMotor_t *motor, float target)
 #endif
         BLDCMotor_setPhaseVoltage(motor, motor->foc_motor.voltage_q, motor->foc_motor.voltage_d, e_angle);
 
+#ifdef JS_RTT
+        JS_RTT_Write3Float(motor->target, motor->currentSense->i_q, motor->currentSense->i_d);
+#endif
+
+
         // BLDCMotor_SVPWM(motor, motor->foc_motor.voltage_q, motor->foc_motor.voltage_d, e_angle);
         // const int counter = 10;
         // static int i = 0;
@@ -1256,6 +1265,73 @@ int BLDCMotor_currentVelocityRPMClosedLoopBandwith(BLDCMotor_t *motor, float tar
 {
     return 0;
 }
+int BLDCMotor_currentVelocityAngleClosedLoopBandwith(BLDCMotor_t *motor, float target)
+{
+    // while (!motor->currentSense->isReady){};
+    if (motor->currentSense->isReady)
+    {
+        static int period_cnt = 0;
+
+        static float target_iq = 0;
+        static float target_velocity = 0;
+
+        // 1. get the status
+        float velocity = BLDCMotor_getVelocity(motor)*360;
+        motor->velocity = LowPassFilter(&motor->lpf_velocity, velocity);
+
+        motor->angle = motor->foc_motor.Encoder.angle;
+        float degrees = motor->angle * 180 / _PI;
+        motor->degree = LowPassFilter(&motor->lpf_degree,degrees);
+
+        float e_angle = _electricalAngle_calibrated(motor->direction, motor->angle, motor->foc_motor.pole_pairs, motor->foc_motor.zero_electric_angle);
+        motor->e_angle = e_angle;
+
+        static int pos_cnt = 0;
+        static int vel_cnt = 0;
+        const int vel_period= CONFIG_CUR_FREQ / CONFIG_CUR_VEL_FREQ;
+        const int pos_period = CONFIG_CUR_FREQ / CONFIG_CUR_VEL_POS_FREQ;
+
+        pos_cnt++;
+        if (pos_cnt >= pos_period) {
+            pos_cnt = 0;
+            target_velocity = PIDController_update(&motor->PID_degree, target - motor->degree);
+            motor->target_velocity = target_velocity;
+            // PIDController_resetIntegral(&motor->PID_velocity);
+        }
+
+        vel_cnt++;
+        if (vel_cnt >= vel_period) {
+            vel_cnt = 0;
+            target_iq = PIDController_update(&motor->PID_velocity, target_velocity - motor->velocity);
+            motor->target_iq = target_iq;
+            // PIDController_resetIntegral(&motor->PID_iq);
+            // PIDController_resetIntegral(&motor->PID_id);
+        }
+
+        //=========================
+
+        // period_cnt++;
+        // if (period_cnt == velocityLoop_period || period_cnt == angleLoop_period) {
+        //     if (period_cnt == angleLoop_period)
+        //     {
+        //         period_cnt = 0;
+        //     }
+        // }
+        motor->foc_motor.voltage_q = PIDController_update(&motor->PID_iq, target_iq - motor->currentSense->i_q);
+        motor->foc_motor.voltage_d = PIDController_update(&motor->PID_id, 0 - motor->currentSense->i_d);
+        // motor->foc_motor.voltage_d = 0;
+        // BLDCMotor_SVPWM(motor, motor->foc_motor.voltage_q, motor->foc_motor.voltage_d, e_angle);
+        // e_angle = LowPassFilter(&motor->lpf_eAngle, e_angle);
+        BLDCMotor_setPhaseVoltage(motor, motor->foc_motor.voltage_q, motor->foc_motor.voltage_d, e_angle);
+        // int t1 = getUs();
+        // int delta_t= t1 - t0;
+        // float dt = (float)delta_t;
+        // VOFA_SendJustFloat_DMA(&dt, 1);
+        // VOFA_SendJustFloat(&dt, 1);
+
+    }
+    return 0;
+}
 int BLDCMotor_currentVelocityAngleClosedLoopBandwith_1(BLDCMotor_t *motor, float target)
 {
 
@@ -1308,7 +1384,7 @@ int BLDCMotor_currentVelocityAngleClosedLoopBandwith_1(BLDCMotor_t *motor, float
     }
     return 0;
 }
-int BLDCMotor_currentVelocityAngleClosedLoopBandwith(BLDCMotor_t *motor, float target)
+int BLDCMotor_currentVelocityAngleClosedLoopBandwith_2(BLDCMotor_t *motor, float target)
 {
     // while (!motor->currentSense->isReady){};
     if (motor->currentSense->isReady)

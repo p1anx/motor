@@ -45,6 +45,7 @@ static void delay_us(uint32_t us)
     }
 }
 DRV_Status_t DRV8301_InitStruct(DRV8301_Handle handle) {
+#ifdef IS_ODRIVE
     handle->EngpioHandle = EN_GATE_GPIO_Port;
     handle->EngpioNumber = EN_GATE_Pin;
     handle->nCSgpioHandle = M0_NCS_GPIO_Port;
@@ -58,6 +59,8 @@ DRV_Status_t DRV8301_InitStruct(DRV8301_Handle handle) {
     if (HAL_SPI_Init(handle->spiHandle) != HAL_OK) {
         return DRV_ERROR;
     }
+#endif
+
     return DRV_OK;
 
 }
