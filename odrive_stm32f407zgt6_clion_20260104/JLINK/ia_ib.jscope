@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<JScopeProject>
+    <FileVersion major="1" minor="1" />
+    <Project>
+        <Configuration>
+            <JLink>
+                <Options Connection="1" IsRTTSession="0" IsRTTWithTimeStamp="0" IsRTTPlus="0" SamplingPeriod="100" SerialNo="0" JTAG_IRPre="0" JTAG_DRPre="0" IP="" TargetDevice="STM32F407ZG" Nickname="" TargetInterface="SWD" InterfaceSpeed="4000" />
+            </JLink>
+            <ElfFile Name="/home/xwj/3-data/0-code/0-github/motor/odrive_stm32f407zgt6_clion_20260104/build/Debug/odrive_f407zgt6_cmake_v0.2_20260104.elf" />
+            <Scope>
+                <Options TimeResolutionUs="1000000" />
+            </Scope>
+            <Trigger>
+                <Options Level="0" Symbol="velocity" On="0" Auto="0" Rise="0" Fall="0" />
+            </Trigger>
+        </Configuration>
+        <Windows>
+            <Graph Show="1" />
+            <Watch Show="1" />
+        </Windows>
+        <SelectedSymbols>
+            <Symbol>
+                <Options Name="velocity" Address="0x20000E18" Type="float" TypeID="1" Size="4" GraphColorRed="255" GraphColorGreen="0" GraphColorBlue="0" YMinSampled="-5404.63" YMaxSampled="28162.4" YAvgSampled="-5.98917" Offset="4" ShowInGraph="1" YOffset="0" IsAutoConfig="0" YResolution="200" MaxValue="-2147483648" File="/home/xwj/3-data/0-code/0-github/motor/odrive_stm32f407zgt6_clion_20260104/BSP/FOC/BLDCMotor.c" DrawStyle="0" NameWithParents="motor.velocity" />
+            </Symbol>
+            <Symbol>
+                <Options Name="degree" Address="0x20000E20" Type="float" TypeID="1" Size="4" GraphColorRed="0" GraphColorGreen="255" GraphColorBlue="0" YMinSampled="0" YMaxSampled="359.887" YAvgSampled="84.253" Offset="8" ShowInGraph="1" YOffset="0" IsAutoConfig="0" YResolution="40" MaxValue="-2147483648" File="/home/xwj/3-data/0-code/0-github/motor/odrive_stm32f407zgt6_clion_20260104/BSP/FOC/BLDCMotor.c" DrawStyle="0" NameWithParents="motor.degree" />
+            </Symbol>
+            <Symbol>
+                <Options Name="target" Address="0x20000E28" Type="float" TypeID="1" Size="4" GraphColorRed="255" GraphColorGreen="0" GraphColorBlue="0" YMinSampled="0" YMaxSampled="160" YAvgSampled="83.9338" Offset="12" ShowInGraph="1" YOffset="0" IsAutoConfig="0" YResolution="40" MaxValue="-2147483648" File="/home/xwj/3-data/0-code/0-github/motor/odrive_stm32f407zgt6_clion_20260104/BSP/FOC/BLDCMotor.c" DrawStyle="0" NameWithParents="motor.target" />
+            </Symbol>
+            <Symbol>
+                <Options Name="target_iq" Address="0x20001014" Type="float" TypeID="1" Size="4" GraphColorRed="255" GraphColorGreen="85" GraphColorBlue="255" YMinSampled="-5" YMaxSampled="5" YAvgSampled="0.0794818" Offset="16" ShowInGraph="0" YOffset="0" IsAutoConfig="0" YResolution="1" MaxValue="-2147483648" File="/home/xwj/3-data/0-code/0-github/motor/odrive_stm32f407zgt6_clion_20260104/BSP/FOC/BLDCMotor.c" DrawStyle="0" NameWithParents="motor.target_iq" />
+            </Symbol>
+            <Symbol>
+                <Options Name="target_velocity" Address="0x20001020" Type="float" TypeID="1" Size="4" GraphColorRed="255" GraphColorGreen="255" GraphColorBlue="0" YMinSampled="-5400" YMaxSampled="345.604" YAvgSampled="-5.91595" Offset="20" ShowInGraph="1" YOffset="0" IsAutoConfig="0" YResolution="200" MaxValue="-2147483648" File="/home/xwj/3-data/0-code/0-github/motor/odrive_stm32f407zgt6_clion_20260104/BSP/FOC/BLDCMotor.c" DrawStyle="0" NameWithParents="motor.target_velocity" />
+            </Symbol>
+            <Symbol>
+                <Options Name="i_d" Address="0x20001130" Type="float" TypeID="1" Size="4" GraphColorRed="0" GraphColorGreen="255" GraphColorBlue="255" YMinSampled="-1.64579" YMaxSampled="2.94819" YAvgSampled="0.000382726" Offset="24" ShowInGraph="0" YOffset="0" IsAutoConfig="0" YResolution="1" MaxValue="-2147483648" File="/home/xwj/3-data/0-code/0-github/motor/odrive_stm32f407zgt6_clion_20260104/BSP/FOC/currentSense/currentSense.c" DrawStyle="0" NameWithParents="currentSense.i_d" />
+            </Symbol>
+            <Symbol>
+                <Options Name="i_q" Address="0x20001134" Type="float" TypeID="1" Size="4" GraphColorRed="0" GraphColorGreen="0" GraphColorBlue="255" YMinSampled="-6.41211" YMaxSampled="4.35275" YAvgSampled="0.0797869" Offset="28" ShowInGraph="0" YOffset="0" IsAutoConfig="0" YResolution="1" MaxValue="-2147483648" File="/home/xwj/3-data/0-code/0-github/motor/odrive_stm32f407zgt6_clion_20260104/BSP/FOC/currentSense/currentSense.c" DrawStyle="0" NameWithParents="currentSense.i_q" />
+            </Symbol>
+        </SelectedSymbols>
+    </Project>
+</JScopeProject>
