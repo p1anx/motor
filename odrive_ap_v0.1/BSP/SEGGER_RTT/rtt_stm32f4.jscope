@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<JScopeProject>
+    <FileVersion major="1" minor="1" />
+    <Project>
+        <Configuration>
+            <JLink>
+                <Options Connection="1" IsRTTSession="0" IsRTTWithTimeStamp="0" IsRTTPlus="0" SamplingPeriod="100" SerialNo="0" JTAG_IRPre="0" JTAG_DRPre="0" IP="" TargetDevice="STM32F407ZG" TargetInterface="SWD" InterfaceSpeed="4000" />
+            </JLink>
+            <ElfFile Name="/home/xwj/3-data/0-code/0-github/motor/simpleFOC_clion_cmake_f407zgt6_v2.3_20251112/build/default/f407zgt6_cmake.elf" />
+            <Scope>
+                <Options TimeResolutionUs="1000000" />
+            </Scope>
+            <Trigger>
+                <Options Level="0" Symbol="target" On="0" Auto="0" Rise="0" Fall="0" />
+            </Trigger>
+        </Configuration>
+        <Windows>
+            <Graph Show="1" />
+            <Watch Show="1" />
+        </Windows>
+        <SelectedSymbols>
+            <Symbol>
+                <Options Name="target" Address="0x200009F4" Type="float" TypeID="1" Size="4" GraphColorRed="255" GraphColorGreen="0" GraphColorBlue="0" YMinSampled="90" YMaxSampled="270" YAvgSampled="184.016" Offset="4" ShowInGraph="1" YOffset="0" IsAutoConfig="0" YResolution="100" MaxValue="-2147483648" File="/home/xwj/3-data/0-code/0-github/motor/simpleFOC_clion_cmake_f407zgt6_v2.3_20251112/BSP/FOC/BLDCMotor.c" DrawStyle="0" NameWithParents=".motor.target" />
+            </Symbol>
+            <Symbol>
+                <Options Name="degree" Address="0x200009EC" Type="float" TypeID="1" Size="4" GraphColorRed="0" GraphColorGreen="0" GraphColorBlue="255" YMinSampled="103.71" YMaxSampled="279.987" YAvgSampled="184.024" Offset="8" ShowInGraph="1" YOffset="0" IsAutoConfig="0" YResolution="100" MaxValue="-2147483648" File="/home/xwj/3-data/0-code/0-github/motor/simpleFOC_clion_cmake_f407zgt6_v2.3_20251112/BSP/FOC/BLDCMotor.c" DrawStyle="0" NameWithParents=".motor.degree" />
+            </Symbol>
+        </SelectedSymbols>
+    </Project>
+</JScopeProject>
