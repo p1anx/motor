@@ -1,1 +1,0 @@
-CMakeLists.txt not found in /home/xwj/3-data/0-code/0-github/motor/odrive_v0.3_stm32h750vbt6_clion_20260110 Select CMakeLists.txt
