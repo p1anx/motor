@@ -30,19 +30,29 @@ void QAM_run(Motor_t *motor) {
 }
 void QAM_run4QAM(Motor_t *motor) {
   float QAM_angle[QAM_SIZE] = {33.5, 275.4, 97.5, 214.3};
-  float QAM_P[QAM_SIZE]     = {5, 20, 10, 20};
+  float QAM_P[QAM_SIZE]     = {30, 20, 20, 20};
+  // int qam_time[QAM_SIZE*2] = {2000, 2000, 2000, 2000, 2000, 1000, 3000, 2000};
+  // int qam_time[QAM_SIZE*2] = {2000, 2000, 2000, 2000, 2000, 1500, 2500, 2000};
+  int qam_time[QAM_SIZE*2] = {2000, 2000, 2000, 2000, 2000, 750, 3250, 2000};
   static int QAM_index = 0;
+  static int t_index = 0;
 
 
   if (!motor->isEnabled) return;
 
-  if (GetInterval_ms(1000)) {
+
+  if (GetInterval_ms(qam_time[t_index])) {
     motor->ref = QAM_angle[QAM_index] ;
     motor->PID_iVelDegree.P = QAM_P[QAM_index];
     QAM_index++;
     if (QAM_index >= QAM_SIZE) QAM_index = 0;
+    t_index++;
+    if (t_index >= QAM_SIZE*2) {
+      t_index = 0;
+    }
   }
 }
+
 #define QAM_AMP_POINTS 100
 void QAM_MeanAmp0(Motor_t *motor) {
 

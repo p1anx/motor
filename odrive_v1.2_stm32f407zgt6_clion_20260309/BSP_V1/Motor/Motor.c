@@ -537,6 +537,7 @@ int GetInterval_ms(int ms) {
   }
   return 0;
 }
+
 void Motor_runMode_stepCurrent(Motor_t *motor) {
   DebugParam.delta_current = 0.5f; //A
   if (GetInterval_ms(1000)) {
