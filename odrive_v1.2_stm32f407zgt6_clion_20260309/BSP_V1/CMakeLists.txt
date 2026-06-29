@@ -10,6 +10,7 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/STM32/uart/my_uart.c
         ${CMAKE_CURRENT_SOURCE_DIR}/STM32/adc/adc_sampling.c
         ${CMAKE_CURRENT_SOURCE_DIR}/STM32/pwm/pwm.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/STM32/tim/timer.c
         ${CMAKE_CURRENT_SOURCE_DIR}/STM32/key/key.c
         ${CMAKE_CURRENT_SOURCE_DIR}/Config/configSTM32.c
         ${CMAKE_CURRENT_SOURCE_DIR}/Config/config.c
@@ -36,6 +37,7 @@ target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/STM32/uart
         ${CMAKE_CURRENT_SOURCE_DIR}/STM32/adc
         ${CMAKE_CURRENT_SOURCE_DIR}/STM32/pwm
+        ${CMAKE_CURRENT_SOURCE_DIR}/STM32/tim
         ${CMAKE_CURRENT_SOURCE_DIR}/STM32/key
         ${CMAKE_CURRENT_SOURCE_DIR}/Config
         ${CMAKE_CURRENT_SOURCE_DIR}/Sensor

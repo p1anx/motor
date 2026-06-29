@@ -8,6 +8,8 @@
 
 #include "lis3mdl.h"
 #include "my_uart.h"
+#include "tim.h"
+#include "timer.h"
 
 #include <string.h>
 // #include "dma.h"
@@ -163,8 +165,17 @@ B LIS3MDL_GetData(void){
 void lis3mdl_printf(void) {
 
 	// char Bx[], By[], Bz[];
+	char data_string[256];
+	char hello[] = "hello\n";
 	B B0 = LIS3MDL_GetData();
-	printf("%f, %f, %f\n", B0.x, B0.y, B0.z);
+	//printf("%f, %f, %f\n", B0.x, B0.y, B0.z);
+	printf("%.4f, %.4f, %.4f\n", B0.x, B0.y, B0.z);
+
+	// sprintf(str, "%.3f, %.3f, %.3f\n", B0.x, B0.y, B0.z);
+	// sprintf(data_string, "%.3f\n", B0.x);
+	// printf("%s", str);
+	// HAL_UART_Transmit(&huart1,data_string, sizeof(data_string), HAL_MAX_DELAY);
+	// HAL_UART_Transmit(&huart1, hello, sizeof(hello), HAL_MAX_DELAY);
 
 	// sprintf(Bx, "%f", B[0]);
 	// sprintf(By, "%f", B[0]);
@@ -463,16 +474,20 @@ void uart_test0(void) {
 	}
 
 }
+extern int flag_send;
 void uart_lis3mdl(void) {
       LIS3MDL_Init();
       UART_RxIT_Start(&huart1);
 	static  int start_run = 0;
+	printf("hello lis3mdl\n");
       while (1) {
-      	if (UART_GetCMD_Once("start")) {
-      		start_run = 1;
-      	}
-      	if (start_run) {
-      		lis3mdl_printf();
+      	// if (UART_GetCMD_Once("start")) {
+      	// 	start_run = 1;
+      	// }
+      	// if (start_run) {
+      	if (flag_send == 1) {
+      		flag_send = 0;
+	      lis3mdl_printf();
       	}
 
       }
@@ -480,6 +495,12 @@ void uart_lis3mdl(void) {
 }
 void lis3mdl_main(void) {
 	// uart_test0();
+	printf("testing\n");
+	HAL_TIM_Base_Start_IT(&htim1);
+	// while (1) {
+	// 	printf("start\n");
+	// 	HAL_Delay(1000);
+	// }
 	uart_lis3mdl();
 
 }

@@ -69,7 +69,7 @@ def equal_amplitude_phase_points(
 
 def main():
     # 1. 用 pandas 读取 CSV 数据
-    df = pd.read_csv("data.csv")
+    df = pd.read_csv("data0.csv")
 
     # 假设 ch1 是你要处理的那个正弦通道
     if "ch2" not in df.columns:

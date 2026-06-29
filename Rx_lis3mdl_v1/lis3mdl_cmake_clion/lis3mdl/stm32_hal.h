@@ -84,6 +84,7 @@
     #define DEBUG_OK(fmt, ...)
     #define DEBUG_PRINT(fmt, ...)
 #endif
+extern  TIM_HandleTypeDef htim1;
 extern  TIM_HandleTypeDef htim2;
 // #define us_htim CONFIG_US_TIM
 
@@ -114,6 +115,7 @@ void delay_us(uint32_t us);
 #else
 #define PUTCHAR_PROTOTYPE int fputc(int ch, FILE *f)
 #endif
+
 PUTCHAR_PROTOTYPE {
   HAL_UART_Transmit(&huart1, (uint8_t *)&ch, 1, 0xFFFF); // 阻塞方式打印,串口1
   return ch;
